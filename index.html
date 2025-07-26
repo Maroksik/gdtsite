@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GDT Team</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+
+    <div class="login-container" id="loginContainer">
+        <div class="login-box">
+            <div class="logo">GDT</div>
+            <p class="subtitle">Команда розробників</p>
+            <form id="loginForm">
+                <div class="input-group">
+                    <label for="username">Логін:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Пароль:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="login-btn">Увійти</button>
+                <div id="errorMessage" class="error-message" style="display: none;"></div>
+            </form>
+        </div>
+    </div>
+
+    <div class="main-content" id="mainContent">
+        <button class="logout-btn" onclick="logout()">Вийти</button>
+        
+        <div class="header">
+            <h1>GDT Team</h1>
+            
+        </div>
+
+        <div class="content-section">
+            <!-- Швидкі посилання -->
+            <div class="quick-links">
+                <div class="links-grid" id="quickLinksGrid">
+                    <!-- Заповнюється JavaScript -->
+                </div>
+            </div>
+
+            <div class="grid">
+                
+
+                <!-- Корисні інструменти -->
+                <div class="card">
+                    <h3>🛠️ Наші посилання</h3>
+                    <div class="tools-list">
+                        <a href="https://nekloaka.top" target="_blank" class="tool-link">
+                            <span class="tool-icon">💻</span>
+                            <div>
+                                <strong>Тестова клоака</strong>
+                            </div>
+                        </a>
+                        <a href="https://nekloaka.top/dashboard.html" target="_blank" class="tool-link">
+                            <span class="tool-icon">🚀</span>
+                            <div>
+                                <strong>Клоака дашборд</strong>
+                            </div>
+                        </a>
+                        <a href="https://maroksik.github.io/LinkSplitter/" target="_blank" class="tool-link">
+                            <span class="tool-icon">📡</span>
+                            <div>
+                                <strong>Розбивка лінків</strong>
+                            </div>
+                        </a>
+                        <a href="https://bober93.github.io/kotest/" target="_blank" class="tool-link">
+                            <span class="tool-icon">🎨</span>
+                            <div>
+                                <strong>Тестер ВебВю (бобер)</strong>
+                                <small>UI/UX дизайн</small>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                
+
+                
+
+                
+
+                
+            </div>
+        </div>
+
+        <!-- Модальне вікно для керування посиланнями -->
+        <div id="linksModal" class="modal">
+            <div class="modal-content">
+                <h3>🔗 Керування посиланнями</h3>
+                <div class="modal-form">
+                    <input type="text" id="linkName" placeholder="Назва посилання" class="modal-input">
+                    <input type="url" id="linkUrl" placeholder="https://example.com" class="modal-input">
+                    <input type="text" id="linkIcon" placeholder="🔗 (емодзі)" class="modal-input">
+                    <div class="modal-buttons">
+                        <button onclick="saveLink()" class="save-btn">Зберегти</button>
+                        <button onclick="closeModal()" class="cancel-btn">Скасувати</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
