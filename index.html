@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GDT Team</title>
+    <title>GDT Team Analytics</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="analytics.css">
 </head>
 <body>
     <div class="stars" id="stars"></div>
@@ -14,7 +13,7 @@
     <div class="login-container" id="loginContainer">
         <div class="login-box">
             <div class="logo">GDT</div>
-            <p class="subtitle">Команда розробників</p>
+            <p class="subtitle">Аналітика проектів</p>
             <form id="loginForm">
                 <div class="input-group">
                     <label for="username">Логін:</label>
@@ -31,532 +30,283 @@
     </div>
 
     <!-- Головна сторінка -->
-    <div class="main-content" id="mainContent">
+    <div class="main-content" id="mainContent" style="display: none;">
         <button class="logout-btn" onclick="logout()">Вийти</button>
         
         <div class="header">
-            <h1>GDT Team</h1>
+            <h1>📊 Аналітика проектів</h1>
+            <p>Детальний моніторинг прохідності та життєвого циклу проектів</p>
         </div>
 
-        <div class="content-section">
-            <!-- Швидкі посилання -->
-            <div class="quick-links">
-                <div class="links-grid" id="quickLinksGrid">
-                    <!-- Заповнюється JavaScript -->
+        <!-- Загальна статистика -->
+        <div class="stats-overview">
+            <div class="stat-card">
+                <h3>📈 Загальна статистика</h3>
+                <div class="stat-value" id="totalProjects">0</div>
+                <div class="stat-details">
+                    Активних: <span id="activeProjects">0</span><br>
+                    Завершених: <span id="completedProjects">0</span><br>
+                    Забанених: <span id="bannedProjects">0</span>
                 </div>
             </div>
-
-            <div class="grid">
-                <div class="card">
-                    <h3>📊 Аналітика пилок</h3>
-                    <p>Моніторинг прохідності проектів та статусів модерації</p>
-                    <button class="manage-btn" onclick="showAnalytics()">Перейти до аналітики</button>
+            
+            <div class="stat-card">
+                <h3>⚪ Біла частина</h3>
+                <div class="stat-value" id="whitePassRate">0%</div>
+                <div class="stat-details">
+                    Пройшли: <span id="whitePassed">0</span><br>
+                    Забанені: <span id="whiteBanned">0</span><br>
+                    Середнє життя: <span id="whiteAvgLife">0</span> днів
                 </div>
-
-                <!-- Корисні інструменти -->
-                <div class="card">
-                    <h3>🛠️ Наші посилання</h3>
-                    <div class="tools-list">
-                        <a href="https://nekloaka.top" target="_blank" class="tool-link">
-                            <span class="tool-icon">💻</span>
-                            <div>
-                                <strong>Тестова клоака</strong>
-                            </div>
-                        </a>
-                        <a href="https://nekloaka.top/dashboard.html" target="_blank" class="tool-link">
-                            <span class="tool-icon">🚀</span>
-                            <div>
-                                <strong>Клоака дашборд</strong>
-                            </div>
-                        </a>
-                        <a href="https://maroksik.github.io/LinkSplitter/" target="_blank" class="tool-link">
-                            <span class="tool-icon">📡</span>
-                            <div>
-                                <strong>Розбивка лінків</strong>
-                            </div>
-                        </a>
-                        <a href="https://bober93.github.io/kotest/" target="_blank" class="tool-link">
-                            <span class="tool-icon">🎨</span>
-                            <div>
-                                <strong>Тестер ВебВю (бобер)</strong>
-                            </div>
-                        </a>
-                    </div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>⚫ Сіра частина</h3>
+                <div class="stat-value" id="grayPassRate">0%</div>
+                <div class="stat-details">
+                    Пройшли: <span id="grayPassed">0</span><br>
+                    Забанені: <span id="grayBanned">0</span><br>
+                    Середнє життя: <span id="grayAvgLife">0</span> днів
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>👥 По замовниках</h3>
+                <div class="stat-value" id="clientsCount">0</div>
+                <div class="stat-details" id="clientsStats">
+                    Найкращий: —<br>
+                    Найгірший: —<br>
+                    Середня прохідність: 0%
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>🏗️ По базах діжок</h3>
+                <div class="stat-value" id="basesCount">0</div>
+                <div class="stat-details" id="basesStats">
+                    Найкраща база: —<br>
+                    Найгірша база: —<br>
+                    Середня прохідність: 0%
                 </div>
             </div>
         </div>
 
-        <!-- Модальне вікно для керування посиланнями -->
-        <div id="linksModal" class="modal">
-            <div class="modal-content">
-                <h3>🔗 Керування посиланнями</h3>
-                <div class="modal-form">
-                    <input type="text" id="linkName" placeholder="Назва посилання" class="modal-input">
-                    <input type="url" id="linkUrl" placeholder="https://example.com" class="modal-input">
-                    <input type="text" id="linkIcon" placeholder="🔗 (емодзі)" class="modal-input">
-                    <div class="modal-buttons">
-                        <button onclick="saveLink()" class="save-btn">Зберегти</button>
-                        <button onclick="closeModal()" class="cancel-btn">Скасувати</button>
+        <!-- Панель управління -->
+        <div class="control-panel">
+            <div class="control-grid">
+                <div class="filters-section">
+                    <h3>🔍 Фільтри</h3>
+                    <div class="filters-grid">
+                        <div class="filter-group">
+                            <label for="dateFrom">Від дати:</label>
+                            <input type="date" id="dateFrom">
+                        </div>
+                        <div class="filter-group">
+                            <label for="dateTo">До дати:</label>
+                            <input type="date" id="dateTo">
+                        </div>
+                        <div class="filter-group">
+                            <label for="clientFilter">Замовник:</label>
+                            <select id="clientFilter">
+                                <option value="">Всі замовники</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="baseFilter">База діжок:</label>
+                            <select id="baseFilter">
+                                <option value="">Всі бази</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="statusFilter">Статус:</label>
+                            <select id="statusFilter">
+                                <option value="">Всі статуси</option>
+                                <option value="active">Активні</option>
+                                <option value="white-passed">Пройшли білу</option>
+                                <option value="gray-passed">Пройшли сіру</option>
+                                <option value="banned">Забанені</option>
+                                <option value="completed">Завершені</option>
+                            </select>
+                        </div>
                     </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" onclick="applyFilters()">Застосувати</button>
+                        <button class="btn btn-secondary" onclick="resetFilters()">Скинути</button>
+                    </div>
+                </div>
+                
+                <div class="actions-section">
+                    <h3 style="color: #00d4ff; margin-bottom: 15px;">🔧 Дії</h3>
+                    <button class="btn btn-primary" onclick="openProjectModal()">
+                        ➕ Додати проект
+                    </button>
+                    <button class="btn btn-secondary" onclick="openClientsModal()">
+                        👥 Керування замовниками
+                    </button>
+                    <button class="btn btn-secondary" onclick="openBasesModal()">
+                        🏗️ Керування базами
+                    </button>
+                    <button class="btn btn-export" onclick="exportData()">
+                        📤 Експорт даних
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Таблиця проектів -->
+        <div class="projects-section">
+            <div class="section-header">
+                <h3>📋 Проекти</h3>
+                <div>
+                    Показано: <span id="projectsCount">0</span> з <span id="totalProjectsCount">0</span>
+                </div>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="projects-table" id="projectsTable">
+                    <thead>
+                        <tr>
+                            <th>Назва</th>
+                            <th>Замовник</th>
+                            <th>База діжок</th>
+                            <th>Створено</th>
+                            <th>Біла частина</th>
+                            <th>Сіра частина</th>
+                            <th>Статус</th>
+                            <th>Життя (днів)</th>
+                            <th>Дії</th>
+                        </tr>
+                    </thead>
+                    <tbody id="projectsTableBody">
+                        <!-- Проекти будуть додані тут -->
+                    </tbody>
+                </table>
+                <div id="emptyState" class="empty-state" style="display: none;">
+                    <div class="empty-state-icon">📋</div>
+                    <h3>Немає проектів для відображення</h3>
+                    <p>Додайте проекти або змініть фільтри</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Екран аналітики -->
-    <div class="analytics-screen" id="analyticsScreen" style="display: none;">
-        <div class="stars analytics-stars" id="analyticsStars"></div>
-
-        <div class="main-content">
-            <div class="header">
-                <button class="back-btn" onclick="returnToMain()">← Назад</button>
-                <h1>📊 Аналітика пилок</h1>
-                <p>Детальний моніторинг прохідності проектів та статистика</p>
-            </div>
-
-            <!-- Загальна статистика -->
-            <div class="analytics-overview">
-                <div class="stat-card">
-                    <div class="stat-icon">📈</div>
-                    <div class="stat-info">
-                        <div class="stat-number" id="totalProjects">0</div>
-                        <div class="stat-label">Всього проектів</div>
-                    </div>
+    <!-- Модальне вікно проекту -->
+    <div id="projectModal" class="modal">
+        <div class="modal-content">
+            <h3 id="projectModalTitle">➕ Новий проект</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Назва проекту *</label>
+                    <input type="text" id="projectName" required>
                 </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon">⚪</div>
-                    <div class="stat-info">
-                        <div class="stat-number" id="whitePassRate">0%</div>
-                        <div class="stat-label">Прохідність білої</div>
-                    </div>
+                <div class="form-group">
+                    <label>Замовник *</label>
+                    <select id="projectClient" required>
+                        <option value="">Оберіть замовника</option>
+                    </select>
                 </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon">⚫</div>
-                    <div class="stat-info">
-                        <div class="stat-number" id="grayPassRate">0%</div>
-                        <div class="stat-label">Прохідність сірої</div>
-                    </div>
+                <div class="form-group">
+                    <label>База діжок *</label>
+                    <select id="projectBase" required>
+                        <option value="">Оберіть базу</option>
+                    </select>
                 </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon">⏱️</div>
-                    <div class="stat-info">
-                        <div class="stat-number" id="avgLifespan">0</div>
-                        <div class="stat-label">Середнє життя (днів)</div>
-                    </div>
+                <div class="form-group">
+                    <label>Дата створення *</label>
+                    <input type="date" id="projectCreatedDate" required>
                 </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon">❌</div>
-                    <div class="stat-info">
-                        <div class="stat-number" id="totalBans">0</div>
-                        <div class="stat-label">Всього банів</div>
-                    </div>
+                <div class="form-group full-width">
+                    <label>URL проекту</label>
+                    <input type="url" id="projectUrl">
+                </div>
+                <div class="form-group full-width">
+                    <label>Опис</label>
+                    <textarea id="projectDescription" rows="3"></textarea>
                 </div>
             </div>
-
-            <!-- Графіки -->
-            <div class="charts-section">
-                <div class="chart-container">
-                    <h3>📊 Прохідність по етапах</h3>
-                    <canvas id="passRateChart"></canvas>
-                </div>
-                
-                <div class="chart-container">
-                    <h3>📈 Динаміка проектів по часу</h3>
-                    <canvas id="timelineChart"></canvas>
-                </div>
-                
-                <div class="chart-container">
-                    <h3>🥧 Статуси проектів</h3>
-                    <canvas id="statusChart"></canvas>
-                </div>
-                
-                <div class="chart-container">
-                    <h3>⏰ Тривалість життя проектів</h3>
-                    <canvas id="lifespanChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Панель управління -->
-            <div class="control-panel">
-                <div class="filters-section">
-                    <h3>🔍 Фільтри</h3>
-                    <div class="filter-group">
-                        <label for="dateFrom">Від дати:</label>
-                        <input type="date" id="dateFrom" class="filter-input">
-                    </div>
-                    <div class="filter-group">
-                        <label for="dateTo">До дати:</label>
-                        <input type="date" id="dateTo" class="filter-input">
-                    </div>
-                    <div class="filter-group">
-                        <label for="statusFilter">Статус:</label>
-                        <select id="statusFilter" class="filter-input">
-                            <option value="all">Всі</option>
-                            <option value="active">Активні</option>
-                            <option value="banned">Забанені</option>
-                            <option value="passed">Пройшли</option>
-                        </select>
-                    </div>
-                    <button class="filter-btn" onclick="applyFilters()">Застосувати</button>
-                    <button class="reset-btn" onclick="resetFilters()">Скинути</button>
-                </div>
-                
-                <div class="actions-section">
-                    <button class="add-project-btn" onclick="openAddProjectModal()">
-                        ➕ Додати проект
-                    </button>
-                    <button class="export-btn" onclick="exportAnalytics()">
-                        📤 Експорт
-                    </button>
-                </div>
-            </div>
-
-            <!-- Список проектів -->
-            <div class="projects-section">
-                <div class="section-header">
-                    <h3>📋 Проекти</h3>
-                    <div class="view-toggle">
-                        <button class="toggle-btn active" onclick="setView('grid')" data-view="grid">🔳</button>
-                        <button class="toggle-btn" onclick="setView('list')" data-view="list">📋</button>
-                    </div>
-                </div>
-                <div class="projects-grid" id="projectsGrid">
-                    <!-- Проекти будуть додані тут через JavaScript -->
-                </div>
-            </div>
-        </div>
-
-        <!-- Модальне вікно додавання проекту -->
-        <div id="projectModal" class="modal">
-            <div class="modal-content">
-                <h3 id="modalTitle">➕ Новий проект</h3>
-                <div class="modal-form">
-                    <input type="text" id="projectName" placeholder="Назва проекту" class="modal-input" required>
-                    <textarea id="projectDescription" placeholder="Опис проекту (необов'язково)" class="modal-input" rows="3"></textarea>
-                    <input type="url" id="projectUrl" placeholder="URL проекту (необов'язково)" class="modal-input">
-                    
+            
+            <div style="margin: 20px 0;">
+                <h4 style="color: #00d4ff; margin-bottom: 15px;">Статуси проекту</h4>
+                <div class="form-grid">
                     <div class="form-group">
-                        <label>Дата створення:</label>
-                        <input type="date" id="projectCreatedDate" class="modal-input" required>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="whitePassedCheck">
+                            <label>Пройшла біла частина</label>
+                        </div>
+                        <input type="date" id="whitePassedDate" class="date-input-small" disabled>
                     </div>
-                    
-                    <div class="modal-buttons">
-                        <button onclick="saveProject()" class="save-btn">Зберегти</button>
-                        <button onclick="closeProjectModal()" class="cancel-btn">Скасувати</button>
+                    <div class="form-group">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="whiteBannedCheck">
+                            <label>Забанена біла частина</label>
+                        </div>
+                        <input type="date" id="whiteBannedDate" class="date-input-small" disabled>
+                    </div>
+                    <div class="form-group">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="grayPassedCheck">
+                            <label>Пройшла сіра частина</label>
+                        </div>
+                        <input type="date" id="grayPassedDate" class="date-input-small" disabled>
+                    </div>
+                    <div class="form-group">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="grayBannedCheck">
+                            <label>Забанена сіра частина</label>
+                        </div>
+                        <input type="date" id="grayBannedDate" class="date-input-small" disabled>
                     </div>
                 </div>
             </div>
+            
+            <div class="modal-buttons">
+                <button class="btn btn-primary" onclick="saveProject()">Зберегти</button>
+                <button class="btn btn-secondary" onclick="closeModal()">Скасувати</button>
+            </div>
         </div>
+    </div>
 
-        <!-- Модальне вікно деталей проекту -->
-        <div id="projectDetailsModal" class="modal">
-            <div class="modal-content large">
-                <h3 id="detailsTitle">📊 Деталі проекту</h3>
-                <div id="projectDetailsContent">
-                    <!-- Контент буде заповнений через JavaScript -->
+    <!-- Модальне вікно замовників -->
+    <div id="clientsModal" class="modal">
+        <div class="modal-content">
+            <h3>👥 Керування замовниками</h3>
+            <div style="margin-bottom: 20px;">
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <input type="text" id="newClientName" placeholder="Назва замовника" style="flex: 1;">
+                    <button class="btn btn-primary" onclick="addClient()">Додати</button>
                 </div>
-                <div class="modal-buttons">
-                    <button onclick="closeDetailsModal()" class="cancel-btn">Закрити</button>
+                <div id="clientsList" style="max-height: 300px; overflow-y: auto;">
+                    <!-- Список замовників -->
                 </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeModal()">Закрити</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальне вікно баз діжок -->
+    <div id="basesModal" class="modal">
+        <div class="modal-content">
+            <h3>🏗️ Керування базами діжок</h3>
+            <div style="margin-bottom: 20px;">
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <input type="text" id="newBaseName" placeholder="Назва бази діжок" style="flex: 1;">
+                    <button class="btn btn-primary" onclick="addBase()">Додати</button>
+                </div>
+                <div id="basesList" style="max-height: 300px; overflow-y: auto;">
+                    <!-- Список баз -->
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeModal()">Закрити</button>
             </div>
         </div>
     </div>
 
     <!-- Скрипти -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <script src="script.js"></script>
-    <script src="analytics-data.js"></script>
-    <script src="analytics-charts.js"></script>
-    <script src="analytics.js"></script>
-    
-    <script>
-        // Виправлена логіка переходів між сторінками
-        
-        // Глобальні змінні для керування станом
-        let currentScreen = 'login'; // 'login', 'main', 'analytics'
-        let analyticsInitialized = false;
-
-        // Конфігурація
-        const CONFIG = {
-            starCount: 100,
-            validCredentials: {
-                'admin': '120521',
-            }
-        };
-
-        // Зберігання даних
-        const DataStore = {
-            getQuickLinks: () => JSON.parse(localStorage.getItem('gdtQuickLinks') || '[]'),
-            setQuickLinks: (links) => localStorage.setItem('gdtQuickLinks', JSON.stringify(links))
-        };
-
-        // Створення зірок для фону
-        function createStars(containerId = 'stars') {
-            const starsContainer = document.getElementById(containerId);
-            if (!starsContainer) return;
-            
-            starsContainer.innerHTML = '';
-            const numStars = CONFIG.starCount;
-
-            for (let i = 0; i < numStars; i++) {
-                const star = document.createElement('div');
-                star.className = 'star';
-                star.style.left = Math.random() * 100 + '%';
-                star.style.top = Math.random() * 100 + '%';
-                star.style.animationDelay = Math.random() * 2 + 's';
-                starsContainer.appendChild(star);
-            }
-        }
-
-        // Функції переходу між екранами
-        function showScreen(screenName) {
-            // Приховати всі екрани
-            const screens = ['loginContainer', 'mainContent', 'analyticsScreen'];
-            screens.forEach(screen => {
-                const element = document.getElementById(screen);
-                if (element) {
-                    element.style.display = 'none';
-                }
-            });
-
-            // Показати потрібний екран
-            const targetScreen = document.getElementById(screenName);
-            if (targetScreen) {
-                targetScreen.style.display = screenName === 'loginContainer' ? 'flex' : 'block';
-                currentScreen = screenName.replace('Container', '').replace('Screen', '');
-            }
-        }
-
-        // Система авторизації
-        function login(username, password) {
-            return CONFIG.validCredentials[username] === password;
-        }
-
-        function checkAuth() {
-            const isLoggedIn = sessionStorage.getItem('gdtLoggedIn');
-            if (isLoggedIn === 'true') {
-                showMainContent();
-            }
-        }
-
-        function showMainContent() {
-            showScreen('mainContent');
-            loadQuickLinks();
-        }
-
-        function logout() {
-            sessionStorage.removeItem('gdtLoggedIn');
-            showScreen('loginContainer');
-            document.getElementById('loginForm').reset();
-            
-            const errorMessage = document.getElementById('errorMessage');
-            errorMessage.style.display = 'none';
-            currentScreen = 'login';
-        }
-
-        // Показати екран аналітики
-        function showAnalytics() {
-            console.log('Перехід до аналітики...');
-            showScreen('analyticsScreen');
-            
-            // Створити зірки для аналітики
-            createStars('analyticsStars');
-            
-            // Ініціалізувати аналітику, якщо ще не ініціалізована
-            if (!analyticsInitialized) {
-                initializeAnalytics();
-                analyticsInitialized = true;
-            }
-        }
-
-        // Повернення на головну сторінку
-        function returnToMain() {
-            console.log('Повернення на головну...');
-            showScreen('mainContent');
-        }
-
-        // Ініціалізація аналітики
-        function initializeAnalytics() {
-            console.log('Ініціалізація аналітики...');
-            
-            // Перевірити, чи завантажений Chart.js
-            if (typeof Chart === 'undefined') {
-                console.error('Chart.js не завантажено!');
-                return;
-            }
-
-            // Ініціалізувати менеджери даних та графіків
-            if (typeof AnalyticsDataManager !== 'undefined') {
-                window.analyticsDataManager = new AnalyticsDataManager();
-            }
-            
-            if (typeof AnalyticsChartsManager !== 'undefined') {
-                window.analyticsChartsManager = new AnalyticsChartsManager();
-                window.analyticsChartsManager.initializeCharts();
-                window.analyticsChartsManager.setupResponsive();
-            }
-
-            // Ініціалізувати додаток аналітики
-            if (typeof AnalyticsApp !== 'undefined') {
-                window.analyticsApp = new AnalyticsApp();
-                window.analyticsApp.initialize();
-            }
-        }
-
-        // Обробка форми входу
-        function handleLogin(e) {
-            e.preventDefault();
-            
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value;
-
-            if (!username || !password) {
-                showLoginError('Будь ласка, заповніть всі поля!');
-                return;
-            }
-
-            if (login(username, password)) {
-                sessionStorage.setItem('gdtLoggedIn', 'true');
-                showMainContent();
-                document.getElementById('errorMessage').style.display = 'none';
-            } else {
-                showLoginError('Невірний логін або пароль!');
-            }
-        }
-
-        function showLoginError(message) {
-            const errorMessage = document.getElementById('errorMessage');
-            const loginBox = document.querySelector('.login-box');
-            
-            errorMessage.textContent = message;
-            errorMessage.style.display = 'block';
-            
-            loginBox.style.animation = 'shake 0.5s ease-in-out';
-            setTimeout(() => {
-                loginBox.style.animation = 'slideIn 0.8s ease-out';
-            }, 500);
-        }
-
-        // Швидкі посилання
-        function loadQuickLinks() {
-            const links = DataStore.getQuickLinks();
-            const container = document.getElementById('quickLinksGrid');
-            
-            if (!container) return;
-            
-            container.innerHTML = links.map(link => `
-                <a href="${link.url}" target="_blank" class="quick-link">
-                    <span class="quick-link-icon">${link.icon}</span>
-                    <span class="quick-link-name">${link.name}</span>
-                    <button class="delete-btn" onclick="deleteQuickLink('${link.name}', event)">×</button>
-                </a>
-            `).join('');
-        }
-
-        function deleteQuickLink(name, event) {
-            event.preventDefault();
-            event.stopPropagation();
-            
-            if (confirm(`Видалити посилання "${name}"?`)) {
-                const links = DataStore.getQuickLinks().filter(link => link.name !== name);
-                DataStore.setQuickLinks(links);
-                loadQuickLinks();
-            }
-        }
-
-        // Модальні вікна
-        function closeModal() {
-            const modals = document.querySelectorAll('.modal');
-            modals.forEach(modal => {
-                modal.style.display = 'none';
-            });
-        }
-
-        function saveLink() {
-            const name = document.getElementById('linkName').value.trim();
-            const url = document.getElementById('linkUrl').value.trim();
-            const icon = document.getElementById('linkIcon').value.trim() || '🔗';
-            
-            if (!name || !url) {
-                alert('Заповніть назву та URL');
-                return;
-            }
-            
-            const links = DataStore.getQuickLinks();
-            links.push({ name, url, icon });
-            DataStore.setQuickLinks(links);
-            loadQuickLinks();
-            closeModal();
-        }
-
-        // Ініціалізація
-        function init() {
-            createStars();
-            checkAuth();
-            
-            const loginForm = document.getElementById('loginForm');
-            if (loginForm) {
-                loginForm.addEventListener('submit', handleLogin);
-            }
-
-            // Закриття модальних вікон по кліку поза ними
-            window.addEventListener('click', function(event) {
-                const modals = document.querySelectorAll('.modal');
-                modals.forEach(modal => {
-                    if (event.target === modal) {
-                        closeModal();
-                    }
-                });
-            });
-        }
-
-        // Запуск після завантаження DOM
-        document.addEventListener('DOMContentLoaded', init);
-
-        // Глобальні функції для викликів з HTML
-        window.showAnalytics = showAnalytics;
-        window.returnToMain = returnToMain;
-        window.logout = logout;
-        window.deleteQuickLink = deleteQuickLink;
-        window.closeModal = closeModal;
-        window.saveLink = saveLink;
-        
-        // Функції для аналітики (будуть використовуватися коли аналітика ініціалізована)
-        window.openAddProjectModal = () => {
-            if (window.analyticsApp) window.analyticsApp.openAddProjectModal();
-        };
-        
-        window.closeProjectModal = () => {
-            if (window.analyticsApp) window.analyticsApp.closeProjectModal();
-        };
-        
-        window.saveProject = () => {
-            if (window.analyticsApp) window.analyticsApp.saveProject();
-        };
-        
-        window.applyFilters = () => {
-            if (window.analyticsApp) window.analyticsApp.applyFilters();
-        };
-        
-        window.resetFilters = () => {
-            if (window.analyticsApp) window.analyticsApp.resetFilters();
-        };
-        
-        window.setView = (view) => {
-            if (window.analyticsApp) window.analyticsApp.setView(view);
-        };
-        
-        window.exportAnalytics = () => {
-            if (window.analyticsApp) window.analyticsApp.exportAnalytics();
-        };
-        
-        window.closeDetailsModal = () => {
-            if (window.analyticsApp) window.analyticsApp.closeDetailsModal();
-        };
-    </script>
+    <script src="js/data-manager.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
