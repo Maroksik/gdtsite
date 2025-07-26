@@ -15,13 +15,17 @@ class AnalyticsDataManager {
                 grayBanned: { enabled: false, date: null }
             }
         };
+        
+        console.log('AnalyticsDataManager ініціалізовано');
     }
 
     // Отримання всіх проектів
     getProjects() {
         try {
             const data = localStorage.getItem(this.storageKey);
-            return data ? JSON.parse(data) : [];
+            const projects = data ? JSON.parse(data) : [];
+            console.log(`Завантажено ${projects.length} проектів`);
+            return projects;
         } catch (error) {
             console.error('Помилка завантаження проектів:', error);
             return [];
@@ -32,6 +36,7 @@ class AnalyticsDataManager {
     saveProjects(projects) {
         try {
             localStorage.setItem(this.storageKey, JSON.stringify(projects));
+            console.log(`Збережено ${projects.length} проектів`);
             return true;
         } catch (error) {
             console.error('Помилка збереження проектів:', error);
@@ -51,6 +56,7 @@ class AnalyticsDataManager {
         
         projects.push(newProject);
         this.saveProjects(projects);
+        console.log('Додано новий проект:', newProject);
         return newProject;
     }
 
@@ -62,8 +68,10 @@ class AnalyticsDataManager {
         if (index !== -1) {
             projects[index] = { ...projects[index], ...updates };
             this.saveProjects(projects);
+            console.log('Оновлено проект:', projectId);
             return projects[index];
         }
+        console.warn('Проект не знайдено:', projectId);
         return null;
     }
 
@@ -74,8 +82,10 @@ class AnalyticsDataManager {
         
         if (filteredProjects.length !== projects.length) {
             this.saveProjects(filteredProjects);
+            console.log('Видалено проект:', projectId);
             return true;
         }
+        console.warn('Проект для видалення не знайдено:', projectId);
         return false;
     }
 
@@ -91,8 +101,10 @@ class AnalyticsDataManager {
             
             project.statuses[statusType] = { enabled, date };
             this.saveProjects(projects);
+            console.log('Оновлено статус:', { projectId, statusType, enabled, date });
             return true;
         }
+        console.warn('Проект для оновлення статусу не знайдено:', projectId);
         return false;
     }
 
@@ -107,7 +119,8 @@ class AnalyticsDataManager {
         
         // Фільтр по даті
         if (filters.dateFrom) {
-            projects = projects.filter(p => p.createdAt >= filters.dateFrom);
+            const dateFrom = new Date(filters.dateFrom);
+            projects = projects.filter(p => new Date(p.createdAt) >= dateFrom);
         }
         
         if (filters.dateTo) {
@@ -140,6 +153,7 @@ class AnalyticsDataManager {
             }
         }
         
+        console.log(`Відфільтровано ${projects.length} проектів з фільтрами:`, filters);
         return projects;
     }
 
@@ -199,6 +213,7 @@ class AnalyticsDataManager {
         // Загальна кількість банів
         stats.totalBans = stats.whiteBanned + stats.grayBanned;
 
+        console.log('Обчислено статистику:', stats);
         return stats;
     }
 
@@ -235,7 +250,7 @@ class AnalyticsDataManager {
         const projects = this.getProjects();
         const stats = this.calculateStatistics(projects);
 
-        return {
+        const chartData = {
             passRateData: {
                 labels: ['Біла частина', 'Сіра частина'],
                 datasets: [{
@@ -249,7 +264,9 @@ class AnalyticsDataManager {
                         'rgba(255, 255, 255, 1)',
                         'rgba(128, 128, 128, 1)'
                     ],
-                    borderWidth: 2
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    borderSkipped: false
                 }]
             },
 
@@ -282,6 +299,9 @@ class AnalyticsDataManager {
 
             lifespanData: this.getLifespanData(projects)
         };
+
+        console.log('Підготовлено дані для графіків');
+        return chartData;
     }
 
     // Дані для графіка часової лінії
@@ -330,28 +350,32 @@ class AnalyticsDataManager {
                     data: sortedMonths.map(month => monthlyData[month].created),
                     borderColor: 'rgba(0, 212, 255, 1)',
                     backgroundColor: 'rgba(0, 212, 255, 0.1)',
-                    fill: true
+                    fill: true,
+                    tension: 0.4
                 },
                 {
                     label: 'Пройшли білу',
                     data: sortedMonths.map(month => monthlyData[month].whitePassed),
                     borderColor: 'rgba(255, 255, 255, 1)',
                     backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    fill: false
+                    fill: false,
+                    tension: 0.4
                 },
                 {
                     label: 'Пройшли сіру',
                     data: sortedMonths.map(month => monthlyData[month].grayPassed),
                     borderColor: 'rgba(128, 128, 128, 1)',
                     backgroundColor: 'rgba(128, 128, 128, 0.1)',
-                    fill: false
+                    fill: false,
+                    tension: 0.4
                 },
                 {
                     label: 'Забанені',
                     data: sortedMonths.map(month => monthlyData[month].banned),
                     borderColor: 'rgba(255, 71, 87, 1)',
                     backgroundColor: 'rgba(255, 71, 87, 0.1)',
-                    fill: false
+                    fill: false,
+                    tension: 0.4
                 }
             ]
         };
@@ -402,7 +426,9 @@ class AnalyticsDataManager {
                     'rgba(76, 175, 80, 1)',
                     'rgba(0, 212, 255, 1)'
                 ],
-                borderWidth: 2
+                borderWidth: 2,
+                borderRadius: 8,
+                borderSkipped: false
             }]
         };
     }
@@ -433,6 +459,8 @@ class AnalyticsDataManager {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+        
+        console.log('Дані експортовано');
     }
 
     // Імпорт даних
@@ -446,20 +474,78 @@ class AnalyticsDataManager {
                     
                     if (data.projects && Array.isArray(data.projects)) {
                         this.saveProjects(data.projects);
+                        console.log('Дані імпортовано успішно');
                         resolve(data);
                     } else {
                         reject(new Error('Невірний формат файлу'));
                     }
                 } catch (error) {
+                    console.error('Помилка парсингу файлу:', error);
                     reject(new Error('Помилка парсингу файлу'));
                 }
             };
             
-            reader.onerror = () => reject(new Error('Помилка читання файлу'));
+            reader.onerror = () => {
+                console.error('Помилка читання файлу');
+                reject(new Error('Помилка читання файлу'));
+            };
+            
             reader.readAsText(file);
         });
+    }
+
+    // Створення тестових даних
+    createSampleData() {
+        const sampleProjects = [
+            {
+                name: 'Тестовий проект 1',
+                description: 'Опис першого тестового проекту',
+                url: 'https://example1.com',
+                createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 днів тому
+                statuses: {
+                    whitePassed: { enabled: true, date: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] },
+                    whiteBanned: { enabled: false, date: null },
+                    grayPassed: { enabled: true, date: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] },
+                    grayBanned: { enabled: false, date: null }
+                }
+            },
+            {
+                name: 'Тестовий проект 2',
+                description: 'Опис другого тестового проекту',
+                url: 'https://example2.com',
+                createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(), // 15 днів тому
+                statuses: {
+                    whitePassed: { enabled: true, date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] },
+                    whiteBanned: { enabled: false, date: null },
+                    grayPassed: { enabled: false, date: null },
+                    grayBanned: { enabled: false, date: null }
+                }
+            },
+            {
+                name: 'Забанений проект',
+                description: 'Проект який отримав бан',
+                url: 'https://banned.com',
+                createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 днів тому
+                statuses: {
+                    whitePassed: { enabled: false, date: null },
+                    whiteBanned: { enabled: true, date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] },
+                    grayPassed: { enabled: false, date: null },
+                    grayBanned: { enabled: false, date: null }
+                }
+            }
+        ];
+
+        // Додаємо ID до тестових проектів
+        sampleProjects.forEach(project => {
+            project.id = this.generateId();
+        });
+
+        this.saveProjects(sampleProjects);
+        console.log('Створено тестові дані:', sampleProjects);
+        return sampleProjects;
     }
 }
 
 // Глобальний екземпляр менеджера даних
+console.log('Створюємо глобальний екземпляр AnalyticsDataManager');
 window.analyticsDataManager = new AnalyticsDataManager();

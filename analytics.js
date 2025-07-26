@@ -10,13 +10,37 @@ class AnalyticsApp {
     initialize() {
         if (this.isInitialized) return;
         
+        console.log('Ініціалізація аналітики...');
+        
         this.createStars();
         this.setupEventListeners();
-        this.loadData();
-        this.initializeCharts();
         this.setupDateInputs();
         
+        // Ініціалізуємо менеджери даних та графіків
+        this.initializeManagers();
+        
+        // Завантажуємо дані
+        this.loadData();
+        
+        // Ініціалізуємо графіки
+        this.initializeCharts();
+        
         this.isInitialized = true;
+        console.log('Аналітика ініціалізована успішно');
+    }
+
+    // Ініціалізація менеджерів
+    initializeManagers() {
+        // Перевіряємо наявність менеджерів
+        if (!window.analyticsDataManager) {
+            console.log('Створюємо менеджер даних...');
+            window.analyticsDataManager = new AnalyticsDataManager();
+        }
+        
+        if (!window.analyticsChartsManager) {
+            console.log('Створюємо менеджер графіків...');
+            window.analyticsChartsManager = new AnalyticsChartsManager();
+        }
     }
 
     // Створення зірок для фону
@@ -81,6 +105,7 @@ class AnalyticsApp {
 
     // Завантаження даних
     loadData() {
+        console.log('Завантаження даних...');
         this.updateStatistics();
         this.loadProjects();
         this.updateCharts();
@@ -89,6 +114,7 @@ class AnalyticsApp {
     // Ініціалізація графіків
     initializeCharts() {
         if (window.analyticsChartsManager) {
+            console.log('Ініціалізація графіків...');
             window.analyticsChartsManager.initializeCharts();
             window.analyticsChartsManager.setupResponsive();
         }
@@ -96,8 +122,15 @@ class AnalyticsApp {
 
     // Оновлення статистики
     updateStatistics() {
+        if (!window.analyticsDataManager) {
+            console.warn('Менеджер даних не ініціалізований');
+            return;
+        }
+
         const projects = this.getFilteredProjects();
         const stats = window.analyticsDataManager.calculateStatistics(projects);
+
+        console.log('Статистика:', stats);
 
         // Оновлення елементів статистики
         this.updateStatElement('totalProjects', stats.totalProjects);
@@ -112,12 +145,15 @@ class AnalyticsApp {
         const element = document.getElementById(id);
         if (element) {
             element.textContent = value;
+        } else {
+            console.warn(`Елемент з ID ${id} не знайдено`);
         }
     }
 
     // Оновлення графіків
     updateCharts() {
         if (window.analyticsChartsManager && window.analyticsDataManager) {
+            console.log('Оновлення графіків...');
             const chartData = window.analyticsDataManager.getChartData();
             window.analyticsChartsManager.updateAllCharts(chartData);
         }
@@ -128,7 +164,12 @@ class AnalyticsApp {
         const projects = this.getFilteredProjects();
         const container = document.getElementById('projectsGrid');
         
-        if (!container) return;
+        if (!container) {
+            console.warn('Контейнер проектів не знайдено');
+            return;
+        }
+
+        console.log(`Завантаження ${projects.length} проектів`);
 
         if (projects.length === 0) {
             container.innerHTML = this.getEmptyStateHTML();
@@ -152,6 +193,8 @@ class AnalyticsApp {
 
     // Створення HTML для проекту
     createProjectHTML(project) {
+        if (!window.analyticsDataManager) return '';
+        
         const lifespan = window.analyticsDataManager.calculateProjectLifespan(project);
         const createdDate = new Date(project.createdAt).toLocaleDateString('uk-UA');
         
@@ -222,6 +265,7 @@ class AnalyticsApp {
 
     // Отримання відфільтрованих проектів
     getFilteredProjects() {
+        if (!window.analyticsDataManager) return [];
         return window.analyticsDataManager.filterProjects(this.currentFilters);
     }
 
@@ -287,38 +331,49 @@ class AnalyticsApp {
             createdAt: new Date(createdDate).toISOString()
         };
         
-        window.analyticsDataManager.addProject(projectData);
-        this.loadData();
-        this.closeProjectModal();
+        if (window.analyticsDataManager) {
+            window.analyticsDataManager.addProject(projectData);
+            this.loadData();
+            this.closeProjectModal();
+            console.log('Проект додано:', projectData);
+        }
     }
 
     // Видалення проекту
     deleteProject(projectId) {
+        if (!window.analyticsDataManager) return;
+        
         const project = window.analyticsDataManager.getProjects().find(p => p.id === projectId);
         if (!project) return;
         
         if (confirm(`Видалити проект "${project.name}"?`)) {
             window.analyticsDataManager.deleteProject(projectId);
             this.loadData();
+            console.log('Проект видалено:', projectId);
         }
     }
 
-    // Редагування проекту (заглушка)
+    // Редагування проекту
     editProject(projectId) {
         alert('Функція редагування буде додана в наступній версії');
     }
 
     // Обробка зміни статусу
     handleStatusChange(projectId, statusType, checkbox) {
+        if (!window.analyticsDataManager) return;
+        
         const enabled = checkbox.checked;
         const date = enabled ? new Date().toISOString().split('T')[0] : null;
         
         window.analyticsDataManager.updateProjectStatus(projectId, statusType, enabled, date);
         this.loadData();
+        console.log('Статус оновлено:', { projectId, statusType, enabled });
     }
 
     // Обробка зміни дати
     handleDateChange(projectId, statusType, input) {
+        if (!window.analyticsDataManager) return;
+        
         const projects = window.analyticsDataManager.getProjects();
         const project = projects.find(p => p.id === projectId);
         
@@ -327,11 +382,14 @@ class AnalyticsApp {
             window.analyticsDataManager.saveProjects(projects);
             this.updateStatistics();
             this.updateCharts();
+            console.log('Дату оновлено:', { projectId, statusType, date: input.value });
         }
     }
 
     // Показ деталей проекту
     showProjectDetails(projectId) {
+        if (!window.analyticsDataManager) return;
+        
         const project = window.analyticsDataManager.getProjects().find(p => p.id === projectId);
         if (!project) return;
 
@@ -351,6 +409,8 @@ class AnalyticsApp {
 
     // Створення HTML для деталей проекту
     createProjectDetailsHTML(project) {
+        if (!window.analyticsDataManager) return '';
+        
         const lifespan = window.analyticsDataManager.calculateProjectLifespan(project);
         const createdDate = new Date(project.createdAt).toLocaleDateString('uk-UA');
         
@@ -432,6 +492,7 @@ class AnalyticsApp {
             status: status || 'all'
         };
         
+        console.log('Застосовано фільтри:', this.currentFilters);
         this.loadData();
     }
 
@@ -440,12 +501,17 @@ class AnalyticsApp {
     }
 
     resetFilters() {
-        document.getElementById('dateFrom').value = '';
-        document.getElementById('dateTo').value = '';
-        document.getElementById('statusFilter').value = 'all';
+        const dateFromEl = document.getElementById('dateFrom');
+        const dateToEl = document.getElementById('dateTo');
+        const statusEl = document.getElementById('statusFilter');
+        
+        if (dateFromEl) dateFromEl.value = '';
+        if (dateToEl) dateToEl.value = '';
+        if (statusEl) statusEl.value = 'all';
         
         this.currentFilters = {};
         this.loadData();
+        console.log('Фільтри скинуто');
     }
 
     // Зміна виду
@@ -456,14 +522,19 @@ class AnalyticsApp {
         document.querySelectorAll('.toggle-btn').forEach(btn => {
             btn.classList.remove('active');
         });
-        document.querySelector(`[data-view="${view}"]`)?.classList.add('active');
+        const activeBtn = document.querySelector(`[data-view="${view}"]`);
+        if (activeBtn) activeBtn.classList.add('active');
         
         this.loadProjects();
+        console.log('Змінено вид на:', view);
     }
 
     // Експорт аналітики
     exportAnalytics() {
-        window.analyticsDataManager.exportData();
+        if (window.analyticsDataManager) {
+            window.analyticsDataManager.exportData();
+            console.log('Дані експортовано');
+        }
     }
 
     // Повернення на головну сторінку
@@ -472,33 +543,75 @@ class AnalyticsApp {
             window.analyticsChartsManager.destroyCharts();
         }
         
-        // Тут має бути логіка повернення на головну сторінку
-        // Залежно від того, як інтегровано з основним сайтом
-        if (typeof window.returnToMainSite === 'function') {
-            window.returnToMainSite();
-        } else {
-            window.location.href = 'index.html';
-        }
+        // Повернення на головну сторінку
+        window.location.href = 'index.html';
     }
 }
 
-// Глобальні функції
-window.openAddProjectModal = () => analyticsApp.openAddProjectModal();
-window.closeProjectModal = () => analyticsApp.closeProjectModal();
-window.closeModal = () => analyticsApp.closeModal();
-window.saveProject = () => analyticsApp.saveProject();
-window.applyFilters = () => analyticsApp.applyFilters();
-window.resetFilters = () => analyticsApp.resetFilters();
-window.setView = (view) => analyticsApp.setView(view);
-window.exportAnalytics = () => analyticsApp.exportAnalytics();
-window.returnToMain = () => analyticsApp.returnToMain();
+// Глобальні функції для викликів з HTML
+window.openAddProjectModal = () => {
+    if (window.analyticsApp) window.analyticsApp.openAddProjectModal();
+};
+
+window.closeProjectModal = () => {
+    if (window.analyticsApp) window.analyticsApp.closeProjectModal();
+};
+
+window.closeModal = () => {
+    if (window.analyticsApp) window.analyticsApp.closeModal();
+};
+
+window.saveProject = () => {
+    if (window.analyticsApp) window.analyticsApp.saveProject();
+};
+
+window.applyFilters = () => {
+    if (window.analyticsApp) window.analyticsApp.applyFilters();
+};
+
+window.resetFilters = () => {
+    if (window.analyticsApp) window.analyticsApp.resetFilters();
+};
+
+window.setView = (view) => {
+    if (window.analyticsApp) window.analyticsApp.setView(view);
+};
+
+window.exportAnalytics = () => {
+    if (window.analyticsApp) window.analyticsApp.exportAnalytics();
+};
+
+window.returnToMain = () => {
+    if (window.analyticsApp) window.analyticsApp.returnToMain();
+};
 
 // Ініціалізація додатка
 const analyticsApp = new AnalyticsApp();
 
 // Запуск після завантаження DOM
 document.addEventListener('DOMContentLoaded', () => {
-    analyticsApp.initialize();
+    console.log('DOM завантажено, ініціалізуємо аналітику...');
+    
+    // Чекаємо завантаження Chart.js
+    if (typeof Chart !== 'undefined') {
+        analyticsApp.initialize();
+    } else {
+        console.log('Чекаємо завантаження Chart.js...');
+        // Перевіряємо кожні 100мс
+        const checkChart = setInterval(() => {
+            if (typeof Chart !== 'undefined') {
+                clearInterval(checkChart);
+                analyticsApp.initialize();
+            }
+        }, 100);
+        
+        // Таймаут через 5 секунд
+        setTimeout(() => {
+            clearInterval(checkChart);
+            console.error('Chart.js не завантажився вчасно');
+            analyticsApp.initialize(); // Ініціалізуємо без графіків
+        }, 5000);
+    }
 });
 
 // Експорт для використання в інших файлах
