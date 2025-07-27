@@ -287,8 +287,7 @@ calculateGrayLifespan(project) {
     return diffDays > 0 ? diffDays : 0;
 }
 
-    // === НОВА СТАТИСТИКА ===
-// === ВИПРАВЛЕНА СТАТИСТИКА ===
+// === ПРАВИЛЬНИЙ РОЗРАХУНОК СТАТИСТИКИ ===
 calculateStatistics(projects = null) {
     if (!projects) {
         projects = this.getProjects();
@@ -321,26 +320,13 @@ calculateStatistics(projects = null) {
     let grayLifeTotal = 0, grayLifeCount = 0;
 
     projects.forEach(project => {
+        // Підрахунок статусів для загальної статистики
         const status = this.getProjectStatus(project);
-        
-        // Підрахунок за статусами (для загальної статистики)
         if (status === 'active') stats.active++;
-        else if (status === 'white-spam-down') stats.whiteSpamDown++;
-        else if (status === 'white-passed') stats.whitePassed++;
-        else if (status === 'gray-completed') stats.grayPassed++;
-        else if (status === 'banned') {
-            if (project.whiteBanned) stats.whiteBanned++;
-            if (project.grayBanned) stats.grayBanned++;
-            if (project.grayReviewBanned) stats.grayReviewBanned++;
-        }
-        
-        // ВИПРАВЛЕННЯ: Окремий підрахунок для білої частини
-        let whiteTriedCount = 0;
-        let whitePassedCount = 0;
-        
+
+        // === БІЛА ЧАСТИНА ===
         if (project.whitePassed) {
-            whiteTriedCount++;
-            whitePassedCount++;
+            stats.whitePassed++;
             
             // Розрахунок середнього життя білої частини
             const whiteLife = this.calculateWhiteLifespan(project);
@@ -348,22 +334,24 @@ calculateStatistics(projects = null) {
                 whiteLifeTotal += whiteLife;
                 whiteLifeCount++;
             }
-        } else if (project.whiteSpamDown || project.whiteBanned) {
-            whiteTriedCount++;
-            // Не пройшов білу частину
         }
         
-        // ВИПРАВЛЕННЯ: Окремий підрахунок для сірої частини
-        // Сіра частина доступна тільки тим, хто пройшов білу
+        if (project.whiteSpamDown) {
+            stats.whiteSpamDown++;
+        }
+        
+        if (project.whiteBanned) {
+            stats.whiteBanned++;
+        }
+        
+        // === СІРА ЧАСТИНА ===
+        // Сіра частина доступна тільки тим, хто пройшов білу частину
         if (project.whitePassed && !project.whiteSpamDown) {
-            let grayTriedCount = 0;
-            let grayPassedCount = 0;
             
             if (project.grayPassed) {
-                grayTriedCount++;
-                grayPassedCount++;
+                stats.grayPassed++;
                 
-                // Розрахунок середнього життя сірої частини (тільки для пройдених)
+                // Розрахунок середнього життя сірої частини
                 const grayLife = this.calculateGrayLifespan(project);
                 if (grayLife > 0) {
                     grayLifeTotal += grayLife;
@@ -371,53 +359,51 @@ calculateStatistics(projects = null) {
                 }
             }
             
-            // ВИПРАВЛЕННЯ: Додаємо забанені сірі частини до спроб
             if (project.grayReviewBanned) {
-                grayTriedCount++;
-                // Не пройшов сіру частину - бан на ревю
+                stats.grayReviewBanned++;
             }
             
             if (project.grayBanned) {
-                grayTriedCount++;
-                // Не пройшов сіру частину - повний бан
+                stats.grayBanned++;
                 
-                // ВИПРАВЛЕННЯ: Середнє життя для забанених сірих частин
-                // Якщо була пройдена сіра частина, але потім забанена
+                // Якщо проект спочатку пройшов сіру, а потом забанився
+                // додаємо його життя до статистики
                 if (project.grayPassed) {
                     const grayLife = this.calculateGrayLifespan(project);
-                    if (grayLife > 0) {
+                    if (grayLife > 0 && grayLifeCount === stats.grayPassed - 1) {
+                        // Перевіряємо, чи не було вже додано це життя
                         grayLifeTotal += grayLife;
                         grayLifeCount++;
                     }
                 }
             }
-            
-            // Оновлюємо загальні лічильники сірої частини
-            if (grayTriedCount > 0) {
-                stats.grayPassed += grayPassedCount;
-                stats.grayReviewBanned += (project.grayReviewBanned ? 1 : 0);
-                stats.grayBanned += (project.grayBanned ? 1 : 0);
-            }
         }
-        
-        // Оновлюємо загальні лічильники білої частини
-        stats.whitePassed += whitePassedCount;
-        if (project.whiteSpamDown) stats.whiteSpamDown++;
-        if (project.whiteBanned) stats.whiteBanned++;
     });
 
-    // ВИПРАВЛЕННЯ: Розрахунок відсотка проходження білої частини
+    // Розрахунок відсотків
     const whiteTriedTotal = stats.whitePassed + stats.whiteSpamDown + stats.whiteBanned;
     stats.whitePassRate = whiteTriedTotal > 0 ? Math.round((stats.whitePassed / whiteTriedTotal) * 100) : 0;
     
-    // ВИПРАВЛЕННЯ: Розрахунок відсотка проходження сірої частини
-    // Включаємо ВСІ спроби сірої частини: пройшли + бан на ревю + повний бан
     const grayTriedTotal = stats.grayPassed + stats.grayReviewBanned + stats.grayBanned;
     stats.grayPassRate = grayTriedTotal > 0 ? Math.round((stats.grayPassed / grayTriedTotal) * 100) : 0;
 
     // Середнє життя
     stats.whiteAvgLife = whiteLifeCount > 0 ? Math.round(whiteLifeTotal / whiteLifeCount) : 0;
     stats.grayAvgLife = grayLifeCount > 0 ? Math.round(grayLifeTotal / grayLifeCount) : 0;
+
+    console.log('Статистика розрахована:', {
+        projects: projects.length,
+        whitePassed: stats.whitePassed,
+        whiteSpamDown: stats.whiteSpamDown,
+        whiteBanned: stats.whiteBanned,
+        whiteTriedTotal,
+        whitePassRate: stats.whitePassRate,
+        grayPassed: stats.grayPassed,
+        grayReviewBanned: stats.grayReviewBanned,
+        grayBanned: stats.grayBanned,
+        grayTriedTotal,
+        grayPassRate: stats.grayPassRate
+    });
 
     return stats;
 }
@@ -523,65 +509,93 @@ calculateStatistics(projects = null) {
         });
     }
 
-    // === ТЕСТОВІ ДАНІ ===
-    createSampleData() {
-        const sampleProjects = [
-            {
-                name: 'Успішний проект',
-                client: 'Замовник 1',
-                base: 'База 1',
-                description: 'Проект який пройшов обидві частини',
-                url: 'https://example1.com',
-                createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
-                whitePassed: true,
-                whitePassedDate: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-                whiteSpamDown: false,
-                whiteBanned: false,
-                grayPassed: true,
-                grayPassedDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-                grayBanned: false,
-                grayReviewBanned: false
-            },
-            {
-                name: 'Проект з спам низом',
-                client: 'Замовник 2',
-                base: 'База 2',
-                description: 'Проект який отримав спам низ',
-                url: 'https://example2.com',
-                createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
-                whitePassed: false,
-                whiteSpamDown: true,
-                whiteSpamDownDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-                whiteBanned: false,
-                grayPassed: false,
-                grayBanned: false,
-                grayReviewBanned: false
-            },
-            {
-                name: 'Забанений на ревю',
-                client: 'Замовник 1',
-                base: 'База 3',
-                description: 'Проект забанений на ревю сірої частини',
-                url: 'https://banned.com',
-                createdAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(),
-                whitePassed: true,
-                whitePassedDate: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-                whiteSpamDown: false,
-                whiteBanned: false,
-                grayPassed: false,
-                grayReviewBanned: true,
-                grayReviewBannedDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-                grayBanned: false
-            }
-        ];
+    // === ТЕСТОВІ ДАНІ ДЛЯ ПЕРЕВІРКИ СТАТИСТИКИ ===
+createSampleData() {
+    // Очищуємо старі дані
+    this.saveProjects([]);
+    
+    const sampleProjects = [
+        {
+            name: 'Проект 1 - Успішний',
+            client: 'Замовник 1',
+            base: 'База 1',
+            description: 'Пройшов обидві частини успішно',
+            url: 'https://example1.com',
+            createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
+            // Біла частина - пройшла
+            whitePassed: true,
+            whitePassedDate: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            whiteSpamDown: false,
+            whiteSpamDownDate: null,
+            whiteBanned: false,
+            whiteBannedDate: null,
+            // Сіра частина - пройшла
+            grayPassed: true,
+            grayPassedDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            grayReviewBanned: false,
+            grayReviewBannedDate: null,
+            grayBanned: false,
+            grayBannedDate: null
+        },
+        {
+            name: 'Проект 2 - Спам диз',
+            client: 'Замовник 2',
+            base: 'База 2',
+            description: 'Отримав спам диз на білій частині',
+            url: 'https://example2.com',
+            createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
+            // Біла частина - спам диз
+            whitePassed: false,
+            whitePassedDate: null,
+            whiteSpamDown: true,
+            whiteSpamDownDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            whiteBanned: false,
+            whiteBannedDate: null,
+            // Сіра частина - недоступна
+            grayPassed: false,
+            grayPassedDate: null,
+            grayReviewBanned: false,
+            grayReviewBannedDate: null,
+            grayBanned: false,
+            grayBannedDate: null
+        },
+        {
+            name: 'Проект 3 - Бан на ревю',
+            client: 'Замовник 1',
+            base: 'База 3',
+            description: 'Пройшов білу, забанений на ревю сірої',
+            url: 'https://banned.com',
+            createdAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(),
+            // Біла частина - пройшла
+            whitePassed: true,
+            whitePassedDate: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            whiteSpamDown: false,
+            whiteSpamDownDate: null,
+            whiteBanned: false,
+            whiteBannedDate: null,
+            // Сіра частина - бан на ревю
+            grayPassed: false,
+            grayPassedDate: null,
+            grayReviewBanned: true,
+            grayReviewBannedDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            grayBanned: false,
+            grayBannedDate: null
+        }
+    ];
 
-        sampleProjects.forEach(project => {
-            this.addProject(project);
-        });
+    sampleProjects.forEach(project => {
+        this.addProject(project);
+    });
 
-        console.log('Тестові дані створено');
-        return sampleProjects;
-    }
+    console.log('Тестові дані створено - 3 проекти:');
+    console.log('1. Успішний (біла + сіра пройшли)');
+    console.log('2. Спам диз (біла спам диз)');  
+    console.log('3. Бан на ревю (біла пройшла, сіра бан на ревю)');
+    console.log('Очікувана статистика:');
+    console.log('Біла: 67% (2/3), Сіра: 50% (1/2)');
+    
+    return sampleProjects;
+}
 }
 
 // Глобальний екземпляр менеджера даних
