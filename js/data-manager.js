@@ -257,27 +257,38 @@ class ProjectDataManager {
         return diffDays > 0 ? diffDays : 0;
     }
 
-    calculateGrayLifespan(project) {
-        if (!project.grayPassed || !project.grayPassedDate) {
-            return 0;
-        }
-        
-        const grayStartDate = new Date(project.grayPassedDate);
-        let grayEndDate = new Date(); // За замовчуванням поточна дата
-        
-        // Знаходимо дату завершення сірої частини
-        if (project.grayBanned && project.grayBannedDate) {
-            grayEndDate = new Date(project.grayBannedDate);
-        }
-        
-        const diffTime = grayEndDate - grayStartDate;
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        
-        return diffDays > 0 ? diffDays : 0;
+calculateGrayLifespan(project) {
+    if (!project.grayPassed || !project.grayPassedDate) {
+        return 0;
     }
+    
+    const grayStartDate = new Date(project.grayPassedDate);
+    let grayEndDate = new Date(); // За замовчуванням поточна дата
+    
+    // ВИПРАВЛЕННЯ: Знаходимо дату завершення сірої частини
+    const endDates = [];
+    
+    // Якщо є бан сірої частини - це кінець життя
+    if (project.grayBanned && project.grayBannedDate) {
+        endDates.push(new Date(project.grayBannedDate));
+    }
+    
+    // ПРИМІТКА: grayReviewBanned НЕ завершує життя сірої частини,
+    // оскільки проект може продовжувати працювати після бану на ревю
+    // Тільки повний grayBanned завершує життя
+    
+    if (endDates.length > 0) {
+        grayEndDate = new Date(Math.min(...endDates));
+    }
+    
+    const diffTime = grayEndDate - grayStartDate;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    return diffDays > 0 ? diffDays : 0;
+}
 
     // === НОВА СТАТИСТИКА ===
-    // === НОВА СТАТИСТИКА ===
+// === ВИПРАВЛЕНА СТАТИСТИКА ===
 calculateStatistics(projects = null) {
     if (!projects) {
         projects = this.getProjects();
@@ -312,7 +323,7 @@ calculateStatistics(projects = null) {
     projects.forEach(project => {
         const status = this.getProjectStatus(project);
         
-        // Підрахунок за статусами
+        // Підрахунок за статусами (для загальної статистики)
         if (status === 'active') stats.active++;
         else if (status === 'white-spam-down') stats.whiteSpamDown++;
         else if (status === 'white-passed') stats.whitePassed++;
@@ -323,9 +334,13 @@ calculateStatistics(projects = null) {
             if (project.grayReviewBanned) stats.grayReviewBanned++;
         }
         
-        // Підрахунок пройдених білих частин
+        // ВИПРАВЛЕННЯ: Окремий підрахунок для білої частини
+        let whiteTriedCount = 0;
+        let whitePassedCount = 0;
+        
         if (project.whitePassed) {
-            stats.whitePassed++;
+            whiteTriedCount++;
+            whitePassedCount++;
             
             // Розрахунок середнього життя білої частини
             const whiteLife = this.calculateWhiteLifespan(project);
@@ -333,29 +348,71 @@ calculateStatistics(projects = null) {
                 whiteLifeTotal += whiteLife;
                 whiteLifeCount++;
             }
+        } else if (project.whiteSpamDown || project.whiteBanned) {
+            whiteTriedCount++;
+            // Не пройшов білу частину
         }
         
-        // Підрахунок пройдених сірих частин
-        if (project.grayPassed) {
-            // Розрахунок середнього життя сірої частини
-            const grayLife = this.calculateGrayLifespan(project);
-            if (grayLife > 0) {
-                grayLifeTotal += grayLife;
-                grayLifeCount++;
+        // ВИПРАВЛЕННЯ: Окремий підрахунок для сірої частини
+        // Сіра частина доступна тільки тим, хто пройшов білу
+        if (project.whitePassed && !project.whiteSpamDown) {
+            let grayTriedCount = 0;
+            let grayPassedCount = 0;
+            
+            if (project.grayPassed) {
+                grayTriedCount++;
+                grayPassedCount++;
+                
+                // Розрахунок середнього життя сірої частини (тільки для пройдених)
+                const grayLife = this.calculateGrayLifespan(project);
+                if (grayLife > 0) {
+                    grayLifeTotal += grayLife;
+                    grayLifeCount++;
+                }
+            }
+            
+            // ВИПРАВЛЕННЯ: Додаємо забанені сірі частини до спроб
+            if (project.grayReviewBanned) {
+                grayTriedCount++;
+                // Не пройшов сіру частину - бан на ревю
+            }
+            
+            if (project.grayBanned) {
+                grayTriedCount++;
+                // Не пройшов сіру частину - повний бан
+                
+                // ВИПРАВЛЕННЯ: Середнє життя для забанених сірих частин
+                // Якщо була пройдена сіра частина, але потім забанена
+                if (project.grayPassed) {
+                    const grayLife = this.calculateGrayLifespan(project);
+                    if (grayLife > 0) {
+                        grayLifeTotal += grayLife;
+                        grayLifeCount++;
+                    }
+                }
+            }
+            
+            // Оновлюємо загальні лічильники сірої частини
+            if (grayTriedCount > 0) {
+                stats.grayPassed += grayPassedCount;
+                stats.grayReviewBanned += (project.grayReviewBanned ? 1 : 0);
+                stats.grayBanned += (project.grayBanned ? 1 : 0);
             }
         }
+        
+        // Оновлюємо загальні лічильники білої частини
+        stats.whitePassed += whitePassedCount;
+        if (project.whiteSpamDown) stats.whiteSpamDown++;
+        if (project.whiteBanned) stats.whiteBanned++;
     });
 
-    // Розрахунок відсотка проходження білої частини
-    // Білу частину пройшли ті, хто має whitePassed = true
-    // Не пройшли - ті хто має whiteSpamDown = true або whiteBanned = true
+    // ВИПРАВЛЕННЯ: Розрахунок відсотка проходження білої частини
     const whiteTriedTotal = stats.whitePassed + stats.whiteSpamDown + stats.whiteBanned;
     stats.whitePassRate = whiteTriedTotal > 0 ? Math.round((stats.whitePassed / whiteTriedTotal) * 100) : 0;
     
     // ВИПРАВЛЕННЯ: Розрахунок відсотка проходження сірої частини
-    // Сіру частину можуть пройти тільки ті, хто пройшов білу
-    // Для розрахунку % враховуємо тільки grayPassed і grayReviewBanned (БЕЗ grayBanned)
-    const grayTriedTotal = stats.grayPassed + stats.grayReviewBanned; // Видалено stats.grayBanned
+    // Включаємо ВСІ спроби сірої частини: пройшли + бан на ревю + повний бан
+    const grayTriedTotal = stats.grayPassed + stats.grayReviewBanned + stats.grayBanned;
     stats.grayPassRate = grayTriedTotal > 0 ? Math.round((stats.grayPassed / grayTriedTotal) * 100) : 0;
 
     // Середнє життя
