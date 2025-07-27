@@ -384,7 +384,8 @@ calculateStatistics(projects = null) {
     const whiteTriedTotal = stats.whitePassed + stats.whiteSpamDown + stats.whiteBanned;
     stats.whitePassRate = whiteTriedTotal > 0 ? Math.round((stats.whitePassed / whiteTriedTotal) * 100) : 0;
     
-    const grayTriedTotal = stats.grayPassed + stats.grayReviewBanned + stats.grayBanned;
+    // ВИПРАВЛЕННЯ: grayBanned НЕ враховується в проценті проходимості сірої частини
+    const grayTriedTotal = stats.grayPassed + stats.grayReviewBanned;
     stats.grayPassRate = grayTriedTotal > 0 ? Math.round((stats.grayPassed / grayTriedTotal) * 100) : 0;
 
     // Середнє життя
@@ -401,13 +402,12 @@ calculateStatistics(projects = null) {
         grayPassed: stats.grayPassed,
         grayReviewBanned: stats.grayReviewBanned,
         grayBanned: stats.grayBanned,
-        grayTriedTotal,
+        grayTriedTotal: stats.grayPassed + stats.grayReviewBanned, // Тільки пройшли + бан на ревю
         grayPassRate: stats.grayPassRate
     });
 
     return stats;
 }
-
     // Статистика по замовниках
     getClientStats() {
         const projects = this.getProjects();
