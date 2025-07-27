@@ -336,95 +336,104 @@ class UIManager {
     }
 
     setupStatusCheckboxes() {
-        const whiteCheckboxes = [
-            { check: 'whitePassedCheck', date: 'whitePassedDate' },
-            { check: 'whiteSpamDownCheck', date: 'whiteSpamDownDate' },
-            { check: 'whiteBannedCheck', date: 'whiteBannedDate' }
-        ];
+    const whiteCheckboxes = [
+        { check: 'whitePassedCheck', date: 'whitePassedDate' },
+        { check: 'whiteSpamDownCheck', date: 'whiteSpamDownDate' },
+        { check: 'whiteBannedCheck', date: 'whiteBannedDate' }
+    ];
 
-        const grayCheckboxes = [
-            { check: 'grayPassedCheck', date: 'grayPassedDate' },
-            { check: 'grayReviewBannedCheck', date: 'grayReviewBannedDate' },
-            { check: 'grayBannedCheck', date: 'grayBannedDate' }
-        ];
+    const grayCheckboxes = [
+        { check: 'grayPassedCheck', date: 'grayPassedDate' },
+        { check: 'grayReviewBannedCheck', date: 'grayReviewBannedDate' },
+        { check: 'grayBannedCheck', date: 'grayBannedDate' }
+    ];
 
-        // Біла частина
-        whiteCheckboxes.forEach(({ check, date }) => {
-            const checkbox = document.getElementById(check);
-            const dateInput = document.getElementById(date);
-            
-            if (checkbox && dateInput) {
-                checkbox.addEventListener('change', () => {
-                    dateInput.disabled = !checkbox.checked;
-                    if (checkbox.checked && !dateInput.value) {
-                        dateInput.value = new Date().toISOString().split('T')[0];
-                    } else if (!checkbox.checked) {
-                        dateInput.value = '';
-                    }
-                    
-                    // Оновлюємо доступність сірої частини при зміні білої
-                    this.updateGraySection();
-                    
-                    // Взаємовиключення для білої частини
-                    if (checkbox.checked && check !== 'whitePassedCheck') {
-                        document.getElementById('whitePassedCheck').checked = false;
-                        document.getElementById('whitePassedDate').value = '';
-                        document.getElementById('whitePassedDate').disabled = true;
-                    }
-                    if (checkbox.checked && check === 'whitePassedCheck') {
-                        ['whiteSpamDownCheck', 'whiteBannedCheck'].forEach(otherId => {
-                            const otherCheckbox = document.getElementById(otherId);
-                            const otherDate = document.getElementById(otherId.replace('Check', 'Date'));
-                            if (otherCheckbox) {
-                                otherCheckbox.checked = false;
-                                if (otherDate) {
-                                    otherDate.value = '';
-                                    otherDate.disabled = true;
-                                }
+    // Біла частина
+    whiteCheckboxes.forEach(({ check, date }) => {
+        const checkbox = document.getElementById(check);
+        const dateInput = document.getElementById(date);
+        
+        if (checkbox && dateInput) {
+            checkbox.addEventListener('change', () => {
+                dateInput.disabled = !checkbox.checked;
+                if (checkbox.checked && !dateInput.value) {
+                    dateInput.value = new Date().toISOString().split('T')[0];
+                } else if (!checkbox.checked) {
+                    dateInput.value = '';
+                }
+                
+                // Оновлюємо доступність сірої частини при зміні білої
+                this.updateGraySection();
+                
+                // Взаємовиключення для білої частини
+                if (checkbox.checked && check !== 'whitePassedCheck') {
+                    document.getElementById('whitePassedCheck').checked = false;
+                    document.getElementById('whitePassedDate').value = '';
+                    document.getElementById('whitePassedDate').disabled = true;
+                }
+                if (checkbox.checked && check === 'whitePassedCheck') {
+                    ['whiteSpamDownCheck', 'whiteBannedCheck'].forEach(otherId => {
+                        const otherCheckbox = document.getElementById(otherId);
+                        const otherDate = document.getElementById(otherId.replace('Check', 'Date'));
+                        if (otherCheckbox) {
+                            otherCheckbox.checked = false;
+                            if (otherDate) {
+                                otherDate.value = '';
+                                otherDate.disabled = true;
                             }
-                        });
-                    }
-                });
-            }
-        });
+                        }
+                    });
+                }
+            });
+        }
+    });
 
-        // Сіра частина
-        grayCheckboxes.forEach(({ check, date }) => {
-            const checkbox = document.getElementById(check);
-            const dateInput = document.getElementById(date);
-            
-            if (checkbox && dateInput) {
-                checkbox.addEventListener('change', () => {
-                    dateInput.disabled = !checkbox.checked;
-                    if (checkbox.checked && !dateInput.value) {
-                        dateInput.value = new Date().toISOString().split('T')[0];
-                    } else if (!checkbox.checked) {
-                        dateInput.value = '';
-                    }
-                    
-                    // Взаємовиключення для сірої частини
-                    if (checkbox.checked && check !== 'grayPassedCheck') {
-                        document.getElementById('grayPassedCheck').checked = false;
-                        document.getElementById('grayPassedDate').value = '';
-                        document.getElementById('grayPassedDate').disabled = true;
-                    }
-                    if (checkbox.checked && check === 'grayPassedCheck') {
-                        ['grayReviewBannedCheck', 'grayBannedCheck'].forEach(otherId => {
-                            const otherCheckbox = document.getElementById(otherId);
-                            const otherDate = document.getElementById(otherId.replace('Check', 'Date'));
-                            if (otherCheckbox) {
-                                otherCheckbox.checked = false;
-                                if (otherDate) {
-                                    otherDate.value = '';
-                                    otherDate.disabled = true;
-                                }
+    // Сіра частина - ВИПРАВЛЕНО: дозволяємо одночасний вибір "пройшла" і "бан"
+    grayCheckboxes.forEach(({ check, date }) => {
+        const checkbox = document.getElementById(check);
+        const dateInput = document.getElementById(date);
+        
+        if (checkbox && dateInput) {
+            checkbox.addEventListener('change', () => {
+                dateInput.disabled = !checkbox.checked;
+                if (checkbox.checked && !dateInput.value) {
+                    dateInput.value = new Date().toISOString().split('T')[0];
+                } else if (!checkbox.checked) {
+                    dateInput.value = '';
+                }
+                
+                // ВИПРАВЛЕННЯ: Тільки "бан на ревю" і "бан" взаємовиключають один одного
+                // "Пройшла сіра частина" може бути одночасно з будь-яким з банів
+                if (checkbox.checked) {
+                    if (check === 'grayReviewBannedCheck') {
+                        // Якщо вибрано "бан на ревю", знімаємо "бан сірої частини"
+                        const grayBannedCheck = document.getElementById('grayBannedCheck');
+                        const grayBannedDate = document.getElementById('grayBannedDate');
+                        if (grayBannedCheck) {
+                            grayBannedCheck.checked = false;
+                            if (grayBannedDate) {
+                                grayBannedDate.value = '';
+                                grayBannedDate.disabled = true;
                             }
-                        });
+                        }
+                    } else if (check === 'grayBannedCheck') {
+                        // Якщо вибрано "бан сірої частини", знімаємо "бан на ревю"
+                        const grayReviewBannedCheck = document.getElementById('grayReviewBannedCheck');
+                        const grayReviewBannedDate = document.getElementById('grayReviewBannedDate');
+                        if (grayReviewBannedCheck) {
+                            grayReviewBannedCheck.checked = false;
+                            if (grayReviewBannedDate) {
+                                grayReviewBannedDate.value = '';
+                                grayReviewBannedDate.disabled = true;
+                            }
+                        }
                     }
-                });
-            }
-        });
-    }
+                    // "grayPassedCheck" не взаємовиключає нічого - може бути з будь-яким баном
+                }
+            });
+        }
+    });
+}
 
     updateGraySection() {
         const whitePassedCheck = document.getElementById('whitePassedCheck');
