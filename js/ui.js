@@ -138,7 +138,7 @@ class UIManager {
         const statusBadges = {
             'active': '<span class="status-badge status-active">Активний</span>',
             'white-passed': '<span class="status-badge status-white-passed">Біла пройдена</span>',
-            'white-spam-down': '<span class="status-badge" style="background: rgba(255, 165, 0, 0.3); color: #ffa500;">Спам низ</span>',
+            'white-spam-down': '<span class="status-badge" style="background: rgba(255, 165, 0, 0.3); color: #ffa500;">Спам диз</span>',
             'gray-completed': '<span class="status-badge status-completed">Сіра пройдена</span>',
             'banned': '<span class="status-badge status-banned">Забанений</span>'
         };
@@ -148,7 +148,7 @@ class UIManager {
         if (project.whitePassed) {
             whiteStatus = `✅ Пройшла ${project.whitePassedDate ? new Date(project.whitePassedDate).toLocaleDateString('uk-UA') : ''}`;
         } else if (project.whiteSpamDown) {
-            whiteStatus = `📉 Спам низ ${project.whiteSpamDownDate ? new Date(project.whiteSpamDownDate).toLocaleDateString('uk-UA') : ''}`;
+            whiteStatus = `📉 Спам диз ${project.whiteSpamDownDate ? new Date(project.whiteSpamDownDate).toLocaleDateString('uk-UA') : ''}`;
         } else if (project.whiteBanned) {
             whiteStatus = `❌ Бан ${project.whiteBannedDate ? new Date(project.whiteBannedDate).toLocaleDateString('uk-UA') : ''}`;
         }
@@ -442,7 +442,7 @@ class UIManager {
         const grayCheckboxes = ['grayPassedCheck', 'grayReviewBannedCheck', 'grayBannedCheck'];
         const grayDates = ['grayPassedDate', 'grayReviewBannedDate', 'grayBannedDate'];
         
-        // Сіра частина доступна тільки якщо пройшла біла і немає спам низу
+        // Сіра частина доступна тільки якщо пройшла біла і немає Спам дизу
         const grayEnabled = whitePassedCheck && whitePassedCheck.checked && (!whiteSpamDownCheck || !whiteSpamDownCheck.checked);
         
         grayCheckboxes.forEach(id => {

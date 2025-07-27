@@ -78,7 +78,7 @@ function saveProject() {
     
     // Валідація логіки
     if (projectData.whiteSpamDown && projectData.whitePassed) {
-        alert('Проект не може одночасно пройти білу частину і отримати спам низ');
+        alert('Проект не може одночасно пройти білу частину і отримати спам диз');
         return;
     }
     
