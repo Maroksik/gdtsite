@@ -45,7 +45,7 @@
                 <div class="stat-value" id="totalProjects">0</div>
                 <div class="stat-details">
                     Активних: <span id="activeProjects">0</span><br>
-                    Завершених: <span id="completedProjects">0</span><br>
+                    Спам Диз: <span id="spamDownProjects">0</span><br>
                     Забанених: <span id="bannedProjects">0</span>
                 </div>
             </div>
@@ -55,6 +55,7 @@
                 <div class="stat-value" id="whitePassRate">0%</div>
                 <div class="stat-details">
                     Пройшли: <span id="whitePassed">0</span><br>
+                    Спам Диз: <span id="whiteSpamDown">0</span><br>
                     Забанені: <span id="whiteBanned">0</span><br>
                     Середнє життя: <span id="whiteAvgLife">0</span> днів
                 </div>
@@ -65,6 +66,7 @@
                 <div class="stat-value" id="grayPassRate">0%</div>
                 <div class="stat-details">
                     Пройшли: <span id="grayPassed">0</span><br>
+                    Бан на ревю: <span id="grayReviewBanned">0</span><br>
                     Забанені: <span id="grayBanned">0</span><br>
                     Середнє життя: <span id="grayAvgLife">0</span> днів
                 </div>
@@ -123,9 +125,9 @@
                                 <option value="">Всі статуси</option>
                                 <option value="active">Активні</option>
                                 <option value="white-passed">Пройшли білу</option>
-                                <option value="gray-passed">Пройшли сіру</option>
+                                <option value="white-spam-down">Спам Диз</option>
+                                <option value="gray-completed">Пройшли сіру</option>
                                 <option value="banned">Забанені</option>
-                                <option value="completed">Завершені</option>
                             </select>
                         </div>
                     </div>
@@ -148,6 +150,9 @@
                     </button>
                     <button class="btn btn-export" onclick="exportData()">
                         📤 Експорт даних
+                    </button>
+                    <button class="btn btn-secondary" onclick="createSampleData()">
+                        🎲 Тестові дані
                     </button>
                 </div>
             </div>
@@ -172,7 +177,8 @@
                             <th>Біла частина</th>
                             <th>Сіра частина</th>
                             <th>Статус</th>
-                            <th>Життя (днів)</th>
+                            <th>Життя білої (днів)</th>
+                            <th>Життя сірої (днів)</th>
                             <th>Дії</th>
                         </tr>
                     </thead>
@@ -226,34 +232,60 @@
             
             <div style="margin: 20px 0;">
                 <h4 style="color: #00d4ff; margin-bottom: 15px;">Статуси проекту</h4>
-                <div class="form-grid">
-                    <div class="form-group">
-                        <div class="checkbox-group">
-                            <input type="checkbox" id="whitePassedCheck">
-                            <label>Пройшла біла частина</label>
+                
+                <!-- Біла частина -->
+                <div style="margin-bottom: 20px; padding: 15px; background: rgba(255, 255, 255, 0.05); border-radius: 8px; border-left: 3px solid #ffffff;">
+                    <h5 style="color: #ffffff; margin-bottom: 10px;">⚪ Біла частина</h5>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="whitePassedCheck">
+                                <label>Пройшла біла частина</label>
+                            </div>
+                            <input type="date" id="whitePassedDate" class="date-input-small" disabled>
                         </div>
-                        <input type="date" id="whitePassedDate" class="date-input-small" disabled>
+                        <div class="form-group">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="whiteSpamDownCheck">
+                                <label>Спам Диз</label>
+                            </div>
+                            <input type="date" id="whiteSpamDownDate" class="date-input-small" disabled>
+                        </div>
+                        <div class="form-group">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="whiteBannedCheck">
+                                <label>Бан білої частини</label>
+                            </div>
+                            <input type="date" id="whiteBannedDate" class="date-input-small" disabled>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <div class="checkbox-group">
-                            <input type="checkbox" id="whiteBannedCheck">
-                            <label>Забанена біла частина</label>
+                </div>
+
+                <!-- Сіра частина -->
+                <div style="margin-bottom: 20px; padding: 15px; background: rgba(0, 0, 0, 0.3); border-radius: 8px; border-left: 3px solid #888;">
+                    <h5 style="color: #ccc; margin-bottom: 10px;">⚫ Сіра частина</h5>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="grayPassedCheck" disabled>
+                                <label>Пройшла сіра частина</label>
+                            </div>
+                            <input type="date" id="grayPassedDate" class="date-input-small" disabled>
                         </div>
-                        <input type="date" id="whiteBannedDate" class="date-input-small" disabled>
-                    </div>
-                    <div class="form-group">
-                        <div class="checkbox-group">
-                            <input type="checkbox" id="grayPassedCheck">
-                            <label>Пройшла сіра частина</label>
+                        <div class="form-group">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="grayReviewBannedCheck" disabled>
+                                <label>Бан сірої частини на ревю</label>
+                            </div>
+                            <input type="date" id="grayReviewBannedDate" class="date-input-small" disabled>
                         </div>
-                        <input type="date" id="grayPassedDate" class="date-input-small" disabled>
-                    </div>
-                    <div class="form-group">
-                        <div class="checkbox-group">
-                            <input type="checkbox" id="grayBannedCheck">
-                            <label>Забанена сіра частина</label>
+                        <div class="form-group">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="grayBannedCheck" disabled>
+                                <label>Бан сірої частини</label>
+                            </div>
+                            <input type="date" id="grayBannedDate" class="date-input-small" disabled>
                         </div>
-                        <input type="date" id="grayBannedDate" class="date-input-small" disabled>
                     </div>
                 </div>
             </div>

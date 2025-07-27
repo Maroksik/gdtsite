@@ -58,15 +58,34 @@ function saveProject() {
         createdAt: new Date(createdDate).toISOString(),
         url: document.getElementById('projectUrl')?.value.trim() || '',
         description: document.getElementById('projectDescription')?.value.trim() || '',
+        
+        // Біла частина
         whitePassed: document.getElementById('whitePassedCheck')?.checked || false,
         whitePassedDate: document.getElementById('whitePassedDate')?.value || null,
+        whiteSpamDown: document.getElementById('whiteSpamDownCheck')?.checked || false,
+        whiteSpamDownDate: document.getElementById('whiteSpamDownDate')?.value || null,
         whiteBanned: document.getElementById('whiteBannedCheck')?.checked || false,
         whiteBannedDate: document.getElementById('whiteBannedDate')?.value || null,
+        
+        // Сіра частина
         grayPassed: document.getElementById('grayPassedCheck')?.checked || false,
         grayPassedDate: document.getElementById('grayPassedDate')?.value || null,
+        grayReviewBanned: document.getElementById('grayReviewBannedCheck')?.checked || false,
+        grayReviewBannedDate: document.getElementById('grayReviewBannedDate')?.value || null,
         grayBanned: document.getElementById('grayBannedCheck')?.checked || false,
         grayBannedDate: document.getElementById('grayBannedDate')?.value || null
     };
+    
+    // Валідація логіки
+    if (projectData.whiteSpamDown && projectData.whitePassed) {
+        alert('Проект не може одночасно пройти білу частину і отримати спам низ');
+        return;
+    }
+    
+    if (projectData.grayPassed && !projectData.whitePassed) {
+        alert('Сіра частина може пройти тільки якщо пройшла біла частина');
+        return;
+    }
     
     try {
         if (window.dataManager.currentEditId) {

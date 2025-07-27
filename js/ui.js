@@ -36,18 +36,20 @@ class UIManager {
         // Основна статистика
         this.updateElement('totalProjects', stats.total);
         this.updateElement('activeProjects', stats.active);
-        this.updateElement('completedProjects', stats.completed);
-        this.updateElement('bannedProjects', stats.banned);
+        this.updateElement('spamDownProjects', stats.whiteSpamDown);
+        this.updateElement('bannedProjects', stats.whiteBanned + stats.grayBanned + stats.grayReviewBanned);
 
         // Біла частина
         this.updateElement('whitePassRate', stats.whitePassRate + '%');
         this.updateElement('whitePassed', stats.whitePassed);
+        this.updateElement('whiteSpamDown', stats.whiteSpamDown);
         this.updateElement('whiteBanned', stats.whiteBanned);
         this.updateElement('whiteAvgLife', stats.whiteAvgLife);
 
         // Сіра частина
         this.updateElement('grayPassRate', stats.grayPassRate + '%');
         this.updateElement('grayPassed', stats.grayPassed);
+        this.updateElement('grayReviewBanned', stats.grayReviewBanned);
         this.updateElement('grayBanned', stats.grayBanned);
         this.updateElement('grayAvgLife', stats.grayAvgLife);
 
@@ -71,10 +73,10 @@ class UIManager {
         let bestClient = '—', worstClient = '—', avgClientRate = 0;
         
         if (clientEntries.length > 0) {
-            clientEntries.sort((a, b) => b[1].passRate - a[1].passRate);
-            bestClient = clientEntries[0][0] + ' (' + clientEntries[0][1].passRate + '%)';
-            worstClient = clientEntries[clientEntries.length - 1][0] + ' (' + clientEntries[clientEntries.length - 1][1].passRate + '%)';
-            avgClientRate = Math.round(clientEntries.reduce((sum, [, data]) => sum + data.passRate, 0) / clientEntries.length);
+            clientEntries.sort((a, b) => b[1].averagePassRate - a[1].averagePassRate);
+            bestClient = clientEntries[0][0] + ' (' + clientEntries[0][1].averagePassRate + '%)';
+            worstClient = clientEntries[clientEntries.length - 1][0] + ' (' + clientEntries[clientEntries.length - 1][1].averagePassRate + '%)';
+            avgClientRate = Math.round(clientEntries.reduce((sum, [, data]) => sum + data.averagePassRate, 0) / clientEntries.length);
         }
 
         this.updateElement('clientsCount', clientsCount);
@@ -91,10 +93,10 @@ class UIManager {
         let bestBase = '—', worstBase = '—', avgBaseRate = 0;
         
         if (baseEntries.length > 0) {
-            baseEntries.sort((a, b) => b[1].passRate - a[1].passRate);
-            bestBase = baseEntries[0][0] + ' (' + baseEntries[0][1].passRate + '%)';
-            worstBase = baseEntries[baseEntries.length - 1][0] + ' (' + baseEntries[baseEntries.length - 1][1].passRate + '%)';
-            avgBaseRate = Math.round(baseEntries.reduce((sum, [, data]) => sum + data.passRate, 0) / baseEntries.length);
+            baseEntries.sort((a, b) => b[1].averagePassRate - a[1].averagePassRate);
+            bestBase = baseEntries[0][0] + ' (' + baseEntries[0][1].averagePassRate + '%)';
+            worstBase = baseEntries[baseEntries.length - 1][0] + ' (' + baseEntries[baseEntries.length - 1][1].averagePassRate + '%)';
+            avgBaseRate = Math.round(baseEntries.reduce((sum, [, data]) => sum + data.averagePassRate, 0) / baseEntries.length);
         }
 
         this.updateElement('basesCount', basesCount);
@@ -129,28 +131,41 @@ class UIManager {
 
     createProjectRow(project) {
         const status = window.dataManager.getProjectStatus(project);
-        const lifespan = window.dataManager.calculateLifespan(project);
+        const whiteLifespan = window.dataManager.calculateWhiteLifespan(project);
+        const grayLifespan = window.dataManager.calculateGrayLifespan(project);
         const createdDate = new Date(project.createdAt).toLocaleDateString('uk-UA');
 
         const statusBadges = {
             'active': '<span class="status-badge status-active">Активний</span>',
             'white-passed': '<span class="status-badge status-white-passed">Біла пройдена</span>',
-            'gray-passed': '<span class="status-badge status-gray-passed">Сіра пройдена</span>',
-            'banned': '<span class="status-badge status-banned">Забанений</span>',
-            'completed': '<span class="status-badge status-completed">Завершений</span>'
+            'white-spam-down': '<span class="status-badge" style="background: rgba(255, 165, 0, 0.3); color: #ffa500;">Спам низ</span>',
+            'gray-completed': '<span class="status-badge status-completed">Сіра пройдена</span>',
+            'banned': '<span class="status-badge status-banned">Забанений</span>'
         };
 
-        const whiteStatus = project.whitePassed ? 
-            `✅ ${project.whitePassedDate ? new Date(project.whitePassedDate).toLocaleDateString('uk-UA') : ''}` :
-            (project.whiteBanned ? 
-                `❌ ${project.whiteBannedDate ? new Date(project.whiteBannedDate).toLocaleDateString('uk-UA') : ''}` : 
-                '⏳ В процесі');
+        // Статус білої частини
+        let whiteStatus = '⏳ В процесі';
+        if (project.whitePassed) {
+            whiteStatus = `✅ Пройшла ${project.whitePassedDate ? new Date(project.whitePassedDate).toLocaleDateString('uk-UA') : ''}`;
+        } else if (project.whiteSpamDown) {
+            whiteStatus = `📉 Спам низ ${project.whiteSpamDownDate ? new Date(project.whiteSpamDownDate).toLocaleDateString('uk-UA') : ''}`;
+        } else if (project.whiteBanned) {
+            whiteStatus = `❌ Бан ${project.whiteBannedDate ? new Date(project.whiteBannedDate).toLocaleDateString('uk-UA') : ''}`;
+        }
 
-        const grayStatus = project.grayPassed ? 
-            `✅ ${project.grayPassedDate ? new Date(project.grayPassedDate).toLocaleDateString('uk-UA') : ''}` :
-            (project.grayBanned ? 
-                `❌ ${project.grayBannedDate ? new Date(project.grayBannedDate).toLocaleDateString('uk-UA') : ''}` : 
-                '⏳ В процесі');
+        // Статус сірої частини
+        let grayStatus = '—';
+        if (project.whitePassed && !project.whiteSpamDown) {
+            if (project.grayPassed) {
+                grayStatus = `✅ Пройшла ${project.grayPassedDate ? new Date(project.grayPassedDate).toLocaleDateString('uk-UA') : ''}`;
+            } else if (project.grayReviewBanned) {
+                grayStatus = `⚠️ Бан на ревю ${project.grayReviewBannedDate ? new Date(project.grayReviewBannedDate).toLocaleDateString('uk-UA') : ''}`;
+            } else if (project.grayBanned) {
+                grayStatus = `❌ Бан ${project.grayBannedDate ? new Date(project.grayBannedDate).toLocaleDateString('uk-UA') : ''}`;
+            } else {
+                grayStatus = '⏳ В процесі';
+            }
+        }
 
         return `
             <tr>
@@ -164,7 +179,8 @@ class UIManager {
                 <td>${whiteStatus}</td>
                 <td>${grayStatus}</td>
                 <td>${statusBadges[status] || statusBadges.active}</td>
-                <td>${lifespan}</td>
+                <td>${whiteLifespan || '—'}</td>
+                <td>${grayLifespan || '—'}</td>
                 <td>
                     <div class="action-btns">
                         <button class="action-btn edit" onclick="editProject('${project.id}')" title="Редагувати">✏️</button>
@@ -261,11 +277,18 @@ class UIManager {
             if (element) element.value = value;
         });
         
-        // Статуси
+        // Біла частина
         this.setCheckboxAndDate('whitePassedCheck', 'whitePassedDate', project.whitePassed, project.whitePassedDate);
+        this.setCheckboxAndDate('whiteSpamDownCheck', 'whiteSpamDownDate', project.whiteSpamDown, project.whiteSpamDownDate);
         this.setCheckboxAndDate('whiteBannedCheck', 'whiteBannedDate', project.whiteBanned, project.whiteBannedDate);
+        
+        // Сіра частина
         this.setCheckboxAndDate('grayPassedCheck', 'grayPassedDate', project.grayPassed, project.grayPassedDate);
+        this.setCheckboxAndDate('grayReviewBannedCheck', 'grayReviewBannedDate', project.grayReviewBanned, project.grayReviewBannedDate);
         this.setCheckboxAndDate('grayBannedCheck', 'grayBannedDate', project.grayBanned, project.grayBannedDate);
+        
+        // Оновлюємо доступність сірої частини
+        this.updateGraySection();
     }
 
     setCheckboxAndDate(checkboxId, dateId, checked, date) {
@@ -286,8 +309,14 @@ class UIManager {
             if (element) element.value = '';
         });
         
-        const checkboxIds = ['whitePassedCheck', 'whiteBannedCheck', 'grayPassedCheck', 'grayBannedCheck'];
-        const dateIds = ['whitePassedDate', 'whiteBannedDate', 'grayPassedDate', 'grayBannedDate'];
+        const checkboxIds = [
+            'whitePassedCheck', 'whiteSpamDownCheck', 'whiteBannedCheck',
+            'grayPassedCheck', 'grayReviewBannedCheck', 'grayBannedCheck'
+        ];
+        const dateIds = [
+            'whitePassedDate', 'whiteSpamDownDate', 'whiteBannedDate',
+            'grayPassedDate', 'grayReviewBannedDate', 'grayBannedDate'
+        ];
         
         checkboxIds.forEach(id => {
             const element = document.getElementById(id);
@@ -301,29 +330,129 @@ class UIManager {
                 element.disabled = true;
             }
         });
+        
+        // Блокуємо сіру частину за замовчуванням
+        this.updateGraySection();
     }
 
     setupStatusCheckboxes() {
-        const checkboxes = [
+        const whiteCheckboxes = [
             { check: 'whitePassedCheck', date: 'whitePassedDate' },
-            { check: 'whiteBannedCheck', date: 'whiteBannedDate' },
+            { check: 'whiteSpamDownCheck', date: 'whiteSpamDownDate' },
+            { check: 'whiteBannedCheck', date: 'whiteBannedDate' }
+        ];
+
+        const grayCheckboxes = [
             { check: 'grayPassedCheck', date: 'grayPassedDate' },
+            { check: 'grayReviewBannedCheck', date: 'grayReviewBannedDate' },
             { check: 'grayBannedCheck', date: 'grayBannedDate' }
         ];
 
-        checkboxes.forEach(({ check, date }) => {
+        // Біла частина
+        whiteCheckboxes.forEach(({ check, date }) => {
             const checkbox = document.getElementById(check);
             const dateInput = document.getElementById(date);
             
             if (checkbox && dateInput) {
-                checkbox.addEventListener('change', function() {
-                    dateInput.disabled = !this.checked;
-                    if (this.checked && !dateInput.value) {
+                checkbox.addEventListener('change', () => {
+                    dateInput.disabled = !checkbox.checked;
+                    if (checkbox.checked && !dateInput.value) {
                         dateInput.value = new Date().toISOString().split('T')[0];
-                    } else if (!this.checked) {
+                    } else if (!checkbox.checked) {
                         dateInput.value = '';
                     }
+                    
+                    // Оновлюємо доступність сірої частини при зміні білої
+                    this.updateGraySection();
+                    
+                    // Взаємовиключення для білої частини
+                    if (checkbox.checked && check !== 'whitePassedCheck') {
+                        document.getElementById('whitePassedCheck').checked = false;
+                        document.getElementById('whitePassedDate').value = '';
+                        document.getElementById('whitePassedDate').disabled = true;
+                    }
+                    if (checkbox.checked && check === 'whitePassedCheck') {
+                        ['whiteSpamDownCheck', 'whiteBannedCheck'].forEach(otherId => {
+                            const otherCheckbox = document.getElementById(otherId);
+                            const otherDate = document.getElementById(otherId.replace('Check', 'Date'));
+                            if (otherCheckbox) {
+                                otherCheckbox.checked = false;
+                                if (otherDate) {
+                                    otherDate.value = '';
+                                    otherDate.disabled = true;
+                                }
+                            }
+                        });
+                    }
                 });
+            }
+        });
+
+        // Сіра частина
+        grayCheckboxes.forEach(({ check, date }) => {
+            const checkbox = document.getElementById(check);
+            const dateInput = document.getElementById(date);
+            
+            if (checkbox && dateInput) {
+                checkbox.addEventListener('change', () => {
+                    dateInput.disabled = !checkbox.checked;
+                    if (checkbox.checked && !dateInput.value) {
+                        dateInput.value = new Date().toISOString().split('T')[0];
+                    } else if (!checkbox.checked) {
+                        dateInput.value = '';
+                    }
+                    
+                    // Взаємовиключення для сірої частини
+                    if (checkbox.checked && check !== 'grayPassedCheck') {
+                        document.getElementById('grayPassedCheck').checked = false;
+                        document.getElementById('grayPassedDate').value = '';
+                        document.getElementById('grayPassedDate').disabled = true;
+                    }
+                    if (checkbox.checked && check === 'grayPassedCheck') {
+                        ['grayReviewBannedCheck', 'grayBannedCheck'].forEach(otherId => {
+                            const otherCheckbox = document.getElementById(otherId);
+                            const otherDate = document.getElementById(otherId.replace('Check', 'Date'));
+                            if (otherCheckbox) {
+                                otherCheckbox.checked = false;
+                                if (otherDate) {
+                                    otherDate.value = '';
+                                    otherDate.disabled = true;
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    updateGraySection() {
+        const whitePassedCheck = document.getElementById('whitePassedCheck');
+        const whiteSpamDownCheck = document.getElementById('whiteSpamDownCheck');
+        
+        const grayCheckboxes = ['grayPassedCheck', 'grayReviewBannedCheck', 'grayBannedCheck'];
+        const grayDates = ['grayPassedDate', 'grayReviewBannedDate', 'grayBannedDate'];
+        
+        // Сіра частина доступна тільки якщо пройшла біла і немає спам низу
+        const grayEnabled = whitePassedCheck && whitePassedCheck.checked && (!whiteSpamDownCheck || !whiteSpamDownCheck.checked);
+        
+        grayCheckboxes.forEach(id => {
+            const checkbox = document.getElementById(id);
+            if (checkbox) {
+                checkbox.disabled = !grayEnabled;
+                if (!grayEnabled) {
+                    checkbox.checked = false;
+                }
+            }
+        });
+        
+        grayDates.forEach(id => {
+            const dateInput = document.getElementById(id);
+            if (dateInput) {
+                dateInput.disabled = true;
+                if (!grayEnabled) {
+                    dateInput.value = '';
+                }
             }
         });
     }

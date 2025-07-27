@@ -615,4 +615,140 @@ select option {
         text-align: left;
         padding: 10px 0;
     }
+
+    /* Додаткові стилі для нових полів форми */
+
+/* Статуси проекту в модальному вікні */
+.status-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 3px solid;
+}
+
+.status-section.white-section {
+    background: rgba(255, 255, 255, 0.05);
+    border-left-color: #ffffff;
+}
+
+.status-section.gray-section {
+    background: rgba(0, 0, 0, 0.3);
+    border-left-color: #888;
+}
+
+.status-section h5 {
+    margin-bottom: 10px;
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+/* Покращені чекбокси */
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: auto;
+    min-width: 18px;
+    height: 18px;
+    accent-color: #00d4ff;
+    cursor: pointer;
+}
+
+.checkbox-group input[type="checkbox"]:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.checkbox-group label {
+    margin: 0;
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.9rem;
+}
+
+.checkbox-group input[type="checkbox"]:disabled + label {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Малі поля для дат */
+.date-input-small {
+    width: 140px !important;
+    padding: 4px 8px !important;
+    font-size: 12px !important;
+    margin-top: 5px;
+}
+
+.date-input-small:disabled {
+    opacity: 0.5;
+    background: rgba(255, 255, 255, 0.02);
+    cursor: not-allowed;
+}
+
+/* Додаткові статуси в таблиці */
+.status-spam-down {
+    background: rgba(255, 165, 0, 0.3);
+    color: #ffa500;
+}
+
+.status-gray-review-banned {
+    background: rgba(255, 193, 7, 0.3);
+    color: #ffc107;
+}
+
+/* Покращення для таблиці проектів */
+.projects-table th:nth-child(8),
+.projects-table th:nth-child(9),
+.projects-table td:nth-child(8),
+.projects-table td:nth-child(9) {
+    text-align: center;
+    width: 80px;
+}
+
+/* Покращення для форми проекту */
+.form-grid.status-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+/* Анімації для чекбоксів */
+.checkbox-group input[type="checkbox"] {
+    transition: all 0.2s ease;
+}
+
+.checkbox-group input[type="checkbox"]:checked {
+    transform: scale(1.1);
+}
+
+/* Адаптивність для мобільних пристроїв */
+@media (max-width: 768px) {
+    .status-section {
+        padding: 10px;
+    }
+    
+    .checkbox-group {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .date-input-small {
+        width: 100% !important;
+        margin-left: 0;
+    }
+    
+    .projects-table th:nth-child(8),
+    .projects-table th:nth-child(9) {
+        display: none;
+    }
+    
+    .projects-table td:nth-child(8),
+    .projects-table td:nth-child(9) {
+        display: none;
+    }
+}
 }
