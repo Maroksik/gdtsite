@@ -122,19 +122,60 @@
                 </div>
                 
                 <div class="actions-section">
-                    <h3 style="color: #00d4ff; margin-bottom: 15px;">🔧 Дії</h3>
-                    <button class="btn btn-primary" onclick="openProjectModal()">
-                        ➕ Додати проект
-                    </button>
-                    <button class="btn btn-secondary" onclick="openClientsModal()">
-                        👥 Замовниками
-                    </button>
-                    <button class="btn btn-secondary" onclick="openBasesModal()">
-                        🏗️ Двіжки
-                    </button>
-                    <button class="btn btn-export" onclick="exportData()">
-                        📤 Експорт даних
-                    </button>
+                    <!-- Додайте цей блок до actions-section в index.html -->
+<!-- Додайте цей блок до actions-section в index.html -->
+<div class="actions-section">
+    <h3 style="color: #00d4ff; margin-bottom: 15px;">🔧 Дії</h3>
+    
+    <!-- Основні дії -->
+    <button class="btn btn-primary" onclick="openProjectModal()">
+        ➕ Додати проект
+    </button>
+    <button class="btn btn-secondary" onclick="openClientsModal()">
+        👥 Замовниками
+    </button>
+    <button class="btn btn-secondary" onclick="openBasesModal()">
+        🏗️ Двіжки
+    </button>
+    
+    <!-- Блок синхронізації GitHub -->
+    <div style="border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0; padding-top: 15px;">
+        <h4 style="color: #00d4ff; margin-bottom: 10px; font-size: 0.9rem;">🔄 GitHub Синхронізація</h4>
+        
+        <button class="btn" style="background: #28a745; margin-bottom: 8px;" onclick="downloadFromGitHub()">
+            ⬇️ Завантажити з GitHub
+        </button>
+        
+        <button class="btn" style="background: #17a2b8; margin-bottom: 8px;" onclick="uploadToGitHub()">
+            ⬆️ Вивантажити на GitHub
+        </button>
+        
+        <div style="display: flex; gap: 5px; margin-bottom: 8px;">
+            <button class="btn btn-secondary" style="font-size: 0.8rem; flex: 1;" onclick="openGitHubSettings()">
+                ⚙️ Налаштування
+            </button>
+            <button class="btn" style="background: #6f42c1; font-size: 0.8rem; flex: 1;" onclick="testGitHubConnection()">
+                🔍 Тест
+            </button>
+        </div>
+        
+        <div style="display: flex; gap: 5px;">
+            <button class="btn" style="background: #ffc107; color: #000; font-size: 0.8rem; flex: 1;" onclick="restoreBackup()">
+                🔄 Backup
+            </button>
+            <button class="btn" style="background: #fd7e14; font-size: 0.8rem; flex: 1;" onclick="createTestFile()">
+                📝 Тест файл
+            </button>
+        </div>
+    </div>
+    
+    <!-- Експорт -->
+    <button class="btn btn-export" onclick="exportData()">
+        📤 Експорт даних
+    </button>
+</div>
+
+                    
                     
                 </div>
             </div>
@@ -322,5 +363,6 @@
     <script src="js/auth.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/github-sync.js"></script>
 </body>
 </html>
