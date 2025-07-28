@@ -275,12 +275,7 @@ class GitHubSyncManager {
                 if (!data.projects || !Array.isArray(data.projects)) {
                     issues.push('Поле "projects" відсутнє або не є масивом');
                 }
-                if (!data.clients || !Array.isArray(data.clients)) {
-                    issues.push('Поле "clients" відсутнє або не є масивом');
-                }
-                if (!data.bases || !Array.isArray(data.bases)) {
-                    issues.push('Поле "bases" відсутнє або не є масивом');
-                }
+                
                 
                 if (issues.length > 0) {
                     console.warn('⚠️ Проблеми зі структурою даних:', issues);
@@ -336,8 +331,7 @@ class GitHubSyncManager {
                     grayBannedDate: null
                 }
             ],
-            clients: ['Тест замовник', 'Замовник 1', 'Замовник 2'],
-            bases: ['Тест база', 'База 1', 'База 2'],
+            
             statistics: {
                 total: 1,
                 whitePassRate: 100,

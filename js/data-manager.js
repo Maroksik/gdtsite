@@ -455,8 +455,6 @@ calculateStatistics(projects = null) {
         const data = {
             timestamp: new Date().toISOString(),
             projects: this.getProjects(),
-            clients: this.getClients(),
-            bases: this.getBases(),
             statistics: this.calculateStatistics()
         };
 
@@ -485,12 +483,7 @@ calculateStatistics(projects = null) {
                     if (data.projects && Array.isArray(data.projects)) {
                         this.saveProjects(data.projects);
                     }
-                    if (data.clients && Array.isArray(data.clients)) {
-                        this.saveClients(data.clients);
-                    }
-                    if (data.bases && Array.isArray(data.bases)) {
-                        this.saveBases(data.bases);
-                    }
+                    
                     
                     console.log('Дані імпортовано успішно');
                     resolve(data);
