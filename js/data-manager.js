@@ -12,18 +12,20 @@ class ProjectDataManager {
 
     // Ініціалізація базових даних
     initDefaultData() {
-        // Ініціалізація базових замовників
-        if (!localStorage.getItem(this.clientsKey)) {
-            const defaultClients = ['Замовник 1', 'Замовник 2', 'Замовник 3'];
-            this.saveClients(defaultClients);
-        }
-        
-        // Ініціалізація базових баз діжок
-        if (!localStorage.getItem(this.basesKey)) {
-            const defaultBases = ['База 1', 'База 2', 'База 3', 'Власна база'];
-            this.saveBases(defaultBases);
-        }
+    // Ініціалізація базових замовників
+    if (!localStorage.getItem(this.clientsKey)) {
+        const defaultClients = ['Замовник 1', 'Замовник 2', 'Замовник 3'];
+        this.saveClients(defaultClients);
+        console.log('🔧 Базові замовники створені');
     }
+    
+    // Ініціалізація базових баз діжок
+    if (!localStorage.getItem(this.basesKey)) {
+        const defaultBases = ['База 1', 'База 2', 'База 3', 'Власна база'];
+        this.saveBases(defaultBases);
+        console.log('🔧 Базові бази діжок створені');
+    }
+}
 
     // === ПРОЕКТИ ===
     getProjects() {
@@ -108,17 +110,29 @@ class ProjectDataManager {
         }
     }
 
-    addClient(name) {
-        const clients = this.getClients();
-        if (!clients.includes(name)) {
-            clients.push(name);
-            this.saveClients(clients);
-            console.log('Замовника додано:', name);
-            return true;
-        }
-        console.warn('Замовник вже існує:', name);
-        return false;
+addClient(name) {
+    const clients = this.getClients();
+    if (!clients.includes(name)) {
+        clients.push(name);
+        this.saveClients(clients);
+        console.log('Замовника додано:', name);
+        return true;
     }
+    console.warn('Замовник вже існує:', name);
+    return false;
+}
+
+addBase(name) {
+    const bases = this.getBases();
+    if (!bases.includes(name)) {
+        bases.push(name);
+        this.saveBases(bases);
+        console.log('Базу додано:', name);
+        return true;
+    }
+    console.warn('База вже існує:', name);
+    return false;
+}
 
     deleteClient(name) {
         const clients = this.getClients();
@@ -148,17 +162,7 @@ class ProjectDataManager {
         }
     }
 
-    addBase(name) {
-        const bases = this.getBases();
-        if (!bases.includes(name)) {
-            bases.push(name);
-            this.saveBases(bases);
-            console.log('Базу додано:', name);
-            return true;
-        }
-        console.warn('База вже існує:', name);
-        return false;
-    }
+    
 
     deleteBase(name) {
         const bases = this.getBases();

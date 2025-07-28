@@ -30,8 +30,7 @@ class UIManager {
     updateStatistics() {
         const projects = window.dataManager.filterProjects(window.dataManager.currentFilters);
         const stats = window.dataManager.calculateStatistics(projects);
-        const clientStats = window.dataManager.getClientStats();
-        const baseStats = window.dataManager.getBaseStats();
+       
 
         // Основна статистика
         this.updateElement('totalProjects', stats.total);
@@ -53,11 +52,7 @@ class UIManager {
         this.updateElement('grayBanned', stats.grayBanned);
         this.updateElement('grayAvgLife', stats.grayAvgLife);
 
-        // Статистика по замовниках
-        this.updateClientStats(clientStats);
-
-        // Статистика по базах
-        this.updateBaseStats(baseStats);
+        
     }
 
     updateElement(id, value) {
