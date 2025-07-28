@@ -182,23 +182,7 @@ class GitHubSyncManager {
                 }
             }
             
-            if (newData.clients) {
-                if (Array.isArray(newData.clients)) {
-                    window.dataManager.saveClients(newData.clients);
-                    console.log('Замовники завантажено:', newData.clients.length);
-                } else {
-                    console.warn('Замовники не є масивом, пропускаємо');
-                }
-            }
             
-            if (newData.bases) {
-                if (Array.isArray(newData.bases)) {
-                    window.dataManager.saveBases(newData.bases);
-                    console.log('Бази завантажено:', newData.bases.length);
-                } else {
-                    console.warn('Бази не є масивом, пропускаємо');
-                }
-            }
 
             // Оновлюємо інтерфейс
             if (window.uiManager && typeof window.uiManager.loadData === 'function') {
@@ -242,8 +226,6 @@ class GitHubSyncManager {
             timestamp: new Date().toISOString(),
             version: '1.0',
             projects: window.dataManager.getProjects(),
-            clients: window.dataManager.getClients(),
-            bases: window.dataManager.getBases(),
             statistics: window.dataManager.calculateStatistics()
         };
 
